@@ -144,21 +144,20 @@
     </div>
 
     <script>
-        const weekdays = ['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];
-        // دیتای دقیق تقویم ۱۴۰۵ با روزهای شروع کاملاً تست شده
+        // مپ جدول تبدیل تاریخ میلادی به نام روز هفته در تقویم جلالی ۱۴۰۵
         const monthsData = [
-            { name: 'فروردین', days: 31, index: 1, startWd: 0 }, // فروردین ۱۴۰۵ از شنبه شروع می‌شود (اندیس ۰)
-            { name: 'اردیبهشت', days: 31, index: 2, startWd: 3 },
-            { name: 'خرداد', days: 31, index: 3, startWd: 6 },
-            { name: 'تیر', days: 31, index: 4, startWd: 1 },
-            { name: 'مرداد', days: 31, index: 5, startWd: 3 },
-            { name: 'شهریور', days: 31, index: 6, startWd: 6 },
-            { name: 'مهر', days: 30, index: 7, startWd: 2 },
-            { name: 'آبان', days: 30, index: 8, startWd: 5 },
-            { name: 'آذر', days: 30, index: 9, startWd: 0 },
-            { name: 'دی', days: 30, index: 10, startWd: 2 },
-            { name: 'بهمن', days: 30, index: 11, startWd: 5 },
-            { name: 'اسفند', days: 29, index: 12, startWd: 1 }
+            { name: 'فروردین', days: 31, index: 1, gYear: 2026, gMonth: 3, gStartDay: 21 }, 
+            { name: 'اردیبهشت', days: 31, index: 2, gYear: 2026, gMonth: 4, gStartDay: 21 },
+            { name: 'خرداد', days: 31, index: 3, gYear: 2026, gMonth: 5, gStartDay: 22 },
+            { name: 'تیر', days: 31, index: 4, gYear: 2026, gMonth: 6, gStartDay: 22 },
+            { name: 'مرداد', days: 31, index: 5, gYear: 2026, gMonth: 7, gStartDay: 23 },
+            { name: 'شهریور', days: 31, index: 6, gYear: 2026, gMonth: 8, gStartDay: 23 },
+            { name: 'مهر', days: 30, index: 7, gYear: 2026, gMonth: 9, gStartDay: 23 },
+            { name: 'آبان', days: 30, index: 8, gYear: 2026, gMonth: 10, gStartDay: 23 },
+            { name: 'آذر', days: 30, index: 9, gYear: 2026, gMonth: 11, gStartDay: 22 },
+            { name: 'دی', days: 30, index: 10, gYear: 2026, gMonth: 12, gStartDay: 22 },
+            { name: 'بهمن', days: 30, index: 11, gYear: 2027, gMonth: 1, gStartDay: 21 },
+            { name: 'اسفند', days: 29, index: 12, gYear: 2027, gMonth: 2, gStartDay: 20 }
         ];
 
         const holidays = {
@@ -194,7 +193,7 @@
         }
 
         function goToCurrentMonth() {
-            currentMonthIdx = 2; // خرداد دوره جاری پیش‌فرض
+            currentMonthIdx = 2; 
             renderMonth(currentMonthIdx);
         }
 
@@ -203,18 +202,23 @@
             renderMonth(currentMonthIdx);
         }
 
+        // سیستم تبدیل و استخراج روز دقیق هفته بر اساس توابع سیستم‌عامل
+        function getExactDayName(m, day) {
+            let date = new Date(m.gYear, m.gMonth - 1, m.gStartDay);
+            date.setDate(date.getDate() + (day - 1));
+            return date.toLocaleDateString('fa-IR', { weekday: 'long' });
+        }
+
         function renderMonth(idx) {
             const m = monthsData[idx];
             document.getElementById('monthTitle').innerText = `${m.name} ۱۴۰۵`;
             const listContainer = document.getElementById('daysList');
             listContainer.innerHTML = '';
-            
-            let wd = m.startWd;
 
             for (let d = 1; d <= m.days; d++) {
                 let dateStr = `1405-${String(m.index).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                let dayName = weekdays[wd];
-                let isFriday = (wd === 6);
+                let dayName = getExactDayName(m, d); // استخراج بدون خطای نام روز
+                let isFriday = dayName.includes('جمعه');
                 let isHoliday = !!holidays[dateStr];
                 let isSpecialDay = isFriday || isHoliday;
                 
@@ -247,7 +251,6 @@
                     </div>
                 `;
                 listContainer.insertAdjacentHTML('beforeend', rowHtml);
-                wd = (wd + 1) % 7;
             }
             updateCalculations();
         }
@@ -318,10 +321,10 @@
                         let totalMinutes = endMin - startMin;
 
                         if (isSpecial) {
-                            otMinutes = totalMinutes; // تعطیلات کلاً اضافه‌کاری
+                            otMinutes = totalMinutes; 
                         } else {
                             if (totalMinutes > 480) {
-                                otMinutes = totalMinutes - 480; // بالای ۸ ساعت روز عادی اضافه‌کاری
+                                otMinutes = totalMinutes - 480; 
                             }
                         }
                     }
