@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>داشبورد مدیریتی شیفت شب</title>
+    <title>Fluent Management Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -13,27 +13,454 @@
         body {
             font-family: 'Vazirmatn', sans-serif;
             -webkit-tap-highlight-color: transparent;
-            transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
-        body.dark { background-color: #050508; color: #f3f4f6; }
-        body.light { background-color: #f8fafc; color: #0f172a; }
+        /* تم‌های فوق حرفه‌ای و دارک ادیشن مایکروسافت */
+        body.dark { background-color: #09090b; color: #f4f4f5; }
+        body.light { background-color: #f4f4f5; color: #09090b; }
         
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e1e2f; border-radius: 10px; }
-        body.light .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; }
+        body.light .custom-scrollbar::-webkit-scrollbar-thumb { background: #e4e4e7; }
 
-        /* چک‌باکس انیمیشنی مینیمال */
-        .cb-wrapper {
+        /* فیلدهای زمان مدرن بدون استایل سنتی مرورگر */
+        input[type="time"] {
             position: relative;
-            display: inline-flex;
-            align-items: center;
+            font-family: 'Vazirmatn', monospace !important;
+            direction: ltr !important;
+            text-align: center;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
             cursor: pointer;
         }
+
+        /* چک‌باکس انیمیشنی پریمیوم */
+        .cb-wrapper { position: relative; display: inline-flex; align-items: center; cursor: pointer; }
         .cb-custom {
-            width: 18px;
-            height: 18px;
-            border: 2px solid #2d2d3f;
-            border-radius: 5px;
+            width: 18px; height: 18px; border: 1.5px solid #3f3f46; border-radius: 6px;
+            position: relative; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(24, 24, 27, 0.5);
+        }
+        body.light .cb-custom { border-color: #d4d4d8; background: #ffffff; }
+        .cb-input:checked + .cb-custom {
+            background: #dc2626; border-color: #dc2626; transform: scale(1.05);
+            box-shadow: 0 0 12px rgba(220, 38, 38, 0.3);
+        }
+        .cb-custom::after {
+            content: ''; position: absolute; left: 5px; top: 2px; width: 4px; height: 8px;
+            border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg) scale(0);
+            transition: transform 0.2s ease;
+        }
+        .cb-input:checked + .cb-custom::after { transform: rotate(45deg) scale(1); }
+        
+        /* کارت‌های شیشه‌ای لایه مایکروسافت */
+        .fluent-card {
+            background: rgba(20, 20, 23, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        body.light .fluent-card {
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+        }
+    </style>
+</head>
+<body class="dark pb-40 selection:bg-red-500/20">
+
+    <div class="max-w-md mx-auto px-4 pt-5">
+        <div class="flex justify-between items-center mb-5">
+            <div class="flex items-center gap-3">
+                <div class="w-1.5 h-6 bg-red-600 rounded-full"></div>
+                <div>
+                    <h1 class="text-xs font-black tracking-widest text-gray-400 dark:text-gray-500 uppercase">ENTERPRISE CORE</h1>
+                    <p class="text-[10px] text-gray-600 dark:text-gray-400 font-medium">سیستم هوشمند مدیریت کارکرد شیفت</p>
+                </div>
+            </div>
+            <button onclick="toggleConfigPanel()" class="p-2 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:border-red-500/40 transition-colors">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            </button>
+        </div>
+
+        <div id="configPanel" class="hidden fluent-card rounded-2xl p-4 mb-4 border border-zinc-800/80 shadow-2xl transition-all">
+            <h3 class="text-xs font-bold mb-3 text-red-500 flex items-center gap-1.5">تنظیمات اصلی و پیش‌فرض‌ها</h3>
+            <div class="grid grid-cols-2 gap-3 text-[11px]">
+                <div>
+                    <label class="block text-gray-400 mb-1">ورود روزهای عادی:</label>
+                    <input type="time" id="cfgDefaultIn" value="19:00" onchange="saveGlobalConfigs()" class="w-full bg-zinc-100 dark:bg-zinc-900 text-center p-1.5 rounded-lg border border-zinc-300 dark:border-zinc-800 focus:outline-none focus:border-red-500">
+                </div>
+                <div>
+                    <label class="block text-gray-400 mb-1">خروج روزهای عادی:</label>
+                    <input type="time" id="cfgDefaultOut" value="08:00" onchange="saveGlobalConfigs()" class="w-full bg-zinc-100 dark:bg-zinc-900 text-center p-1.5 rounded-lg border border-zinc-300 dark:border-zinc-800 focus:outline-none focus:border-red-500">
+                </div>
+                <div>
+                    <label class="block text-gray-400 mb-1">پوسته سیستم (Theme):</label>
+                    <select id="cfgTheme" onchange="changeThemeSelector(this.value)" class="w-full bg-zinc-100 dark:bg-zinc-900 p-1.5 rounded-lg border border-zinc-300 dark:border-zinc-800 text-xs focus:outline-none">
+                        <option value="dark">تیره (Black Edition)</option>
+                        <option value="light">روشن (Fluent Light)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-400 mb-1">زبان پنل (Language):</label>
+                    <select id="cfgLang" class="w-full bg-zinc-100 dark:bg-zinc-900 p-1.5 rounded-lg border border-zinc-300 dark:border-zinc-800 text-xs focus:outline-none">
+                        <option value="fa">فارسی (FA)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="fluent-card rounded-2xl p-3 mb-4 flex justify-between items-center shadow-lg">
+            <button onclick="changeMonth(-1)" class="text-gray-400 hover:text-red-500 p-1.5 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+            <div class="text-center">
+                <h2 id="monthTitle" class="text-sm font-black text-gray-800 dark:text-gray-200 tracking-wide">خرداد ۱۴۰۵</h2>
+            </div>
+            <button onclick="changeMonth(1)" class="text-gray-400 hover:text-red-500 p-1.5 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
+            </button>
+        </div>
+
+        <div class="fluent-card rounded-2xl p-4 mb-4 shadow-xl">
+            <div class="grid grid-cols-3 gap-2.5 text-center">
+                <div class="bg-zinc-100/50 dark:bg-zinc-900/40 p-2.5 rounded-xl border border-zinc-300/30 dark:border-zinc-800/40">
+                    <span class="text-gray-400 dark:text-gray-500 text-[9px] block mb-0.5">تراکنش کرایه</span>
+                    <span id="totalFareBadge" class="text-xs font-black text-zinc-800 dark:text-white">۰</span>
+                    <span class="text-[8px] text-gray-500 block">تومان</span>
+                </div>
+                <div class="bg-zinc-100/50 dark:bg-zinc-900/40 p-2.5 rounded-xl border border-zinc-300/30 dark:border-zinc-800/40">
+                    <span class="text-gray-400 dark:text-gray-500 text-[9px] block mb-0.5">مجموع اضافه‌کاری</span>
+                    <span id="totalOtBadge" class="text-xs font-black text-red-500">۰۰:۰۰</span>
+                    <span class="text-[8px] text-gray-500 block">ساعت</span>
+                </div>
+                <div class="bg-zinc-100/50 dark:bg-zinc-900/40 p-2.5 rounded-xl border border-zinc-300/30 dark:border-zinc-800/40">
+                    <span class="text-gray-400 dark:text-gray-500 text-[9px] block mb-0.5">تسویه کارکرد</span>
+                    <span id="totalDaysBadge" class="text-xs font-black text-emerald-500">۰</span>
+                    <span class="text-[8px] text-gray-500 block">روز</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-12 gap-1 text-center text-[9px] text-gray-500 font-bold mb-2 px-2">
+            <div class="col-span-1 text-right">وضعیت</div>
+            <div class="col-span-3 text-right pr-2">توالی تقویم</div>
+            <div class="col-span-2">ورود</div>
+            <div class="col-span-2">خروج</div>
+            <div class="col-span-1">اضافه</div>
+            <div class="col-span-3 text-left pl-2">کرایه (تومان)</div>
+        </div>
+
+        <div id="daysList" class="space-y-1.5 max-h-[42vh] overflow-y-auto custom-scrollbar pr-0.5">
+            </div>
+
+        <div class="fluent-card rounded-2xl p-3.5 mt-4 shadow-xl">
+            <div class="h-20 w-full">
+                <canvas id="analyticsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-zinc-950/90 dark:bg-zinc-950/95 backdrop-blur-xl border-t border-zinc-900/60 shadow-2xl z-50">
+        <div class="flex justify-between items-center p-3 border-b border-zinc-900/30">
+            <button onclick="exportToExcel()" class="bg-gradient-to-r from-red-600 to-red-700 active:scale-95 transition-all text-white font-bold text-[10px] py-1.5 px-3.5 rounded-xl flex items-center gap-1.5 shadow-md">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                خروجی اکسل
+            </button>
+            <div class="text-left">
+                <span class="text-gray-500 text-[8px] block tracking-wide uppercase">Total Volume:</span>
+                <span id="footerTotalFare" class="text-xs font-black text-white">۰ تومان</span>
+            </div>
+        </div>
+        <div class="grid grid-cols-3 text-center py-2 text-gray-400 text-[9px] font-bold">
+            <button onclick="changeMonth(-1)" class="flex flex-col items-center gap-1 hover:text-red-500 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
+                <span>ماه پیشین</span>
+            </button>
+            <button onclick="goToCurrentMonth()" class="flex flex-col items-center gap-1 text-red-500">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                <span>دوره جاری</span>
+            </button>
+            <button onclick="changeMonth(1)" class="flex flex-col items-center gap-1 hover:text-red-500 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 19l-7-7 7-7M19 19l-7-7 7-7"></path></svg>
+                <span>ماه پسین</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const weekdays = ['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];
+        const monthsData = [
+            { name: 'فروردین', days: 31, index: 1, startWd: 6 },
+            { name: 'اردیبهشت', days: 31, index: 2, startWd: 2 },
+            { name: 'خرداد', days: 31, index: 3, startWd: 5 },
+            { name: 'تیر', days: 31, index: 4, startWd: 0 },
+            { name: 'مرداد', days: 31, index: 5, startWd: 2 },
+            { name: 'شهریور', days: 31, index: 6, startWd: 5 },
+            { name: 'مهر', days: 30, index: 7, startWd: 1 },
+            { name: 'آبان', days: 30, index: 8, startWd: 4 },
+            { name: 'آذر', days: 30, index: 9, startWd: 6 },
+            { name: 'دی', days: 30, index: 10, startWd: 1 },
+            { name: 'بهمن', days: 30, index: 11, startWd: 4 },
+            { name: 'اسفند', days: 29, index: 12, startWd: 0 }
+        ];
+
+        const holidays = {
+            "1405-01-01":"نوروز","1405-01-02":"نوروز","1405-01-03":"نوروز","1405-01-04":"نوروز","1405-01-12":"جمهوری اسلامی","1405-01-13":"سیزده بدر",
+            "1405-03-06":"عید قربان","1405-03-14":"رحلت امام","1405-03-15":"۱۵ خرداد","1405-04-03":"تاسوعا","1405-04-04":"عاشورا",
+            "1405-05-13":"اربعین","1405-05-21":"رحلت پیامبر","1405-05-22":"شهادت امام رضا","1405-05-30":"امام عسکری",
+            "1405-06-08":"میلاد پیامبر","1405-10-02":"ولادت امام علی","1405-10-16":"مبعث","1405-11-05":"نیمه شعبان","1405-11-22":"۲۲ بهمن"
+        };
+
+        let currentMonthIdx = 2; // شروع پیش‌فرض از خرداد طبق فایل ارسالی شما
+        let chartInstance = null;
+        
+        // ساختارهای کانتینر ذخیره هوشمند اطلاعات کارکرد
+        let appStorage = JSON.parse(localStorage.getItem('fluent_shift_db_1405')) || {};
+        let globalConfigs = JSON.parse(localStorage.getItem('fluent_global_cfgs')) || { defaultIn: '19:00', defaultOut: '08:00', theme: 'dark' };
+
+        function initApp() {
+            document.getElementById('cfgDefaultIn').value = globalConfigs.defaultIn;
+            document.getElementById('cfgDefaultOut').value = globalConfigs.defaultOut;
+            document.getElementById('cfgTheme').value = globalConfigs.theme;
+            
+            setTheme(globalConfigs.theme);
+            renderMonth(currentMonthIdx);
+            initChart();
+            updateCalculations();
+        }
+
+        function toggleConfigPanel() {
+            const panel = document.getElementById('configPanel');
+            panel.classList.toggle('hidden');
+        }
+
+        function saveGlobalConfigs() {
+            globalConfigs.defaultIn = document.getElementById('cfgDefaultIn').value || '19:00';
+            globalConfigs.defaultOut = document.getElementById('cfgDefaultOut').value || '08:00';
+            localStorage.setItem('fluent_global_cfgs', JSON.stringify(globalConfigs));
+            renderMonth(currentMonthIdx);
+        }
+
+        function changeThemeSelector(theme) {
+            globalConfigs.theme = theme;
+            localStorage.setItem('fluent_global_cfgs', JSON.stringify(globalConfigs));
+            setTheme(theme);
+        }
+
+        function setTheme(theme) {
+            document.body.className = theme === 'dark' ? 'dark pb-40 selection:bg-red-500/20' : 'light pb-40 selection:bg-red-500/20';
+            if(chartInstance) {
+                chartInstance.options.scales.y.grid.color = theme === 'dark' ? '#1f2937' : '#e4e4e7';
+                chartInstance.update();
+            }
+        }
+
+        function goToCurrentMonth() {
+            currentMonthIdx = 2; // خرداد کارکرد اصلی شماست
+            renderMonth(currentMonthIdx);
+        }
+
+        function changeMonth(dir) {
+            currentMonthIdx += dir;
+            if (currentMonthIdx < 0) currentMonthIdx = 11;
+            if (currentMonthIdx > 11) currentMonthIdx = 0;
+            renderMonth(currentMonthIdx);
+        }
+
+        function renderMonth(idx) {
+            const m = monthsData[idx];
+            document.getElementById('monthTitle').innerText = `${m.name} ۱۴۰۵`;
+            const listContainer = document.getElementById('daysList');
+            listContainer.innerHTML = '';
+            
+            let wd = m.startWd;
+
+            for (let d = 1; d <= m.days; d++) {
+                let dateStr = `1405-${String(m.index).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                let dayName = weekdays[wd];
+                let isFriday = (wd === 6);
+                let isHoliday = !!holidays[dateStr];
+                let isSpecialDay = isFriday || isHoliday;
+                
+                // لود از حافظه یا مقداردهی اولیه تضمینی
+                let dayData = appStorage[dateStr] || {
+                    checked: false, 
+                    in: isSpecialDay ? '' : globalConfigs.defaultIn, 
+                    out: isSpecialDay ? '' : globalConfigs.defaultOut, 
+                    fare: '' 
+                };
+
+                // استایل‌دهی سلول بر اساس ساختار لوکس شرکتی
+                let rowBg = isHoliday ? 'bg-red-950/10 border-red-900/30' : isFriday ? 'bg-purple-950/10 border-purple-900/30' : 'bg-zinc-900/20 dark:bg-zinc-900/30 border-zinc-200 dark:border-zinc-800/60';
+                let labelColor = isHoliday ? 'text-red-500 font-bold' : isFriday ? 'text-purple-400' : 'text-zinc-700 dark:text-zinc-300';
+
+                let rowHtml = `
+                    <div class="grid grid-cols-12 gap-1 items-center p-2 rounded-xl text-center text-xs border ${rowBg} day-row transition-all duration-200" data-date="${dateStr}" data-holiday="${isSpecialDay}">
+                        <div class="col-span-1 text-right flex items-center justify-start">
+                            <label class="cb-wrapper">
+                                <input type="checkbox" ${dayData.checked ? 'checked' : ''} onchange="rowCheckedToggle(this)" class="cb-input hidden">
+                                <span class="cb-custom"></span>
+                            </label>
+                        </div>
+                        <div class="col-span-3 text-right pr-1 leading-tight">
+                            <span class="text-[10px] block font-bold ${labelColor}">${d} ${m.name}</span>
+                            <span class="text-[8px] text-gray-500 block">${dayName} ${isHoliday ? '• ' + holidays[dateStr] : ''}</span>
+                        </div>
+                        <div class="col-span-2"><input type="time" value="${dayData.in}" oninput="updateCalculations()" class="in w-full bg-zinc-100 dark:bg-zinc-900/90 text-zinc-900 dark:text-white p-1 rounded-lg border border-zinc-300 dark:border-zinc-800 text-center text-[10px] font-bold focus:border-red-500 focus:outline-none transition-colors"></div>
+                        <div class="col-span-2"><input type="time" value="${dayData.out}" oninput="updateCalculations()" class="out w-full bg-zinc-100 dark:bg-zinc-900/90 text-zinc-900 dark:text-white p-1 rounded-lg border border-zinc-300 dark:border-zinc-800 text-center text-[10px] font-bold focus:border-red-500 focus:outline-none transition-colors"></div>
+                        <div class="col-span-1 text-red-500 font-black text-[10px] ot-cell">—</div>
+                        <div class="col-span-3"><input type="text" value="${dayData.fare}" placeholder="-" oninput="moneyInputTrigger(this)" class="money w-full bg-zinc-100 dark:bg-zinc-900/90 text-zinc-900 dark:text-white font-bold p-1 rounded-lg border border-zinc-300 dark:border-zinc-800 text-left px-1.5 text-[10px] focus:border-red-500 focus:outline-none transition-colors"></div>
+                    </div>
+                `;
+                listContainer.insertAdjacentHTML('beforeend', rowHtml);
+                wd = (wd + 1) % 7;
+            }
+            updateCalculations();
+        }
+
+        function rowCheckedToggle(chk) {
+            let row = chk.closest('[data-date]');
+            let isSpecial = row.getAttribute('data-holiday') === 'true';
+            // در روزهای تعطیل تیک زدن به صورت خودکار مقادیر را پر می‌کند
+            if (chk.checked && isSpecial) {
+                row.querySelector('.in').value = globalConfigs.defaultIn;
+                row.querySelector('.out').value = globalConfigs.defaultOut;
+            }
+            updateCalculations();
+        }
+
+        function moneyInputTrigger(input) {
+            let val = input.value.replace(/[^\d]/g, '');
+            input.value = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            
+            let row = input.closest('[data-date]');
+            let chk = row.querySelector('.cb-input');
+            if (input.value !== '' && !chk.checked) {
+                chk.checked = true;
+                rowCheckedToggle(chk);
+                return;
+            }
+            updateCalculations();
+        }
+
+        function updateCalculations() {
+            let totalFare = 0, totalDays = 0, totalOtMinutes = 0;
+            let dailyOtHours = [];
+            let dailyLabels = [];
+
+            const rows = document.querySelectorAll('#daysList .day-row');
+            rows.forEach((row, i) => {
+                let dateStr = row.getAttribute('data-date');
+                let chk = row.querySelector('.cb-input').checked;
+                let inVal = row.querySelector('.in').value;
+                let outVal = row.querySelector('.out').value;
+                let fareString = row.querySelector('.money').value;
+                let fareVal = parseInt(fareString.replace(/,/g, '')) || 0;
+                let isSpecial = row.getAttribute('data-holiday') === 'true';
+
+                // ذخیره آنی لحظه‌ای در حافظه دستگاه
+                appStorage[dateStr] = { checked: chk, in: inVal, out: outVal, fare: fareString };
+
+                let otHours = 0;
+
+                // محاسبه دقیقاً در صورت فیلتر فعال تیک
+                if (chk) {
+                    totalDays++;
+                    totalFare += fareVal;
+
+                    if (inVal && outVal) {
+                        let [ih, im] = inVal.split(':').map(Number);
+                        let [oh, om] = outVal.split(':').map(Number);
+                        let startMin = ih * 60 + im;
+                        let endMin = oh * 60 + om;
+                        if (endMin < startMin) endMin += 1440;
+                        let totalMinutes = endMin - startMin;
+
+                        if (isSpecial) {
+                            otHours = totalMinutes / 60;
+                        } else {
+                            if (endMin > 1080) {
+                                let otStart = Math.max(startMin, 1080);
+                                let otEnd = Math.min(endMin, 1200);
+                                if (otEnd > otStart) otHours = (otEnd - otStart) / 60;
+                            }
+                        }
+                    }
+                }
+
+                totalOtMinutes += otHours * 60;
+                row.querySelector('.ot-cell').innerText = otHours > 0 ? otHours.toFixed(1) : '—';
+                
+                dailyOtHours.push(otHours);
+                dailyLabels.push(i + 1);
+            });
+
+            localStorage.setItem('fluent_shift_db_1405', JSON.stringify(appStorage));
+
+            let otH = Math.floor(totalOtMinutes / 60);
+            let otM = Math.round(totalOtMinutes % 60);
+            
+            document.getElementById('totalFareBadge').innerText = totalFare.toLocaleString('fa-IR');
+            document.getElementById('footerTotalFare').innerText = `${totalFare.toLocaleString('fa-IR')} تومان`;
+            document.getElementById('totalOtBadge').innerText = `${String(otH).padStart(2,'0')}:${String(otM).padStart(2,'0')}`;
+            document.getElementById('totalDaysBadge').innerText = totalDays.toLocaleString('fa-IR');
+
+            if (chartInstance) {
+                chartInstance.data.labels = dailyLabels;
+                chartInstance.data.datasets[0].data = dailyOtHours;
+                chartInstance.update();
+            }
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('analyticsChart').getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: 'rgba(220, 38, 38, 0.85)',
+                        hoverBackgroundColor: '#dc2626',
+                        borderRadius: 3,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#71717a', font: { size: 7 } } },
+                        y: { grid: { color: '#27272a' }, ticks: { color: '#71717a', font: { size: 7 } } }
+                    }
+                }
+            });
+        }
+
+        function exportToExcel() {
+            let data = [["تاریخ", "ورود", "خروج", "کرایه دریافتی"]];
+            for (let date in appStorage) {
+                let rec = appStorage[date];
+                if (rec.checked) {
+                    data.push([date, rec.in, rec.out, rec.fare.replace(/,/g, '')]);
+                }
+            }
+            let ws = XLSX.utils.aoa_to_sheet(data);
+            let wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "گزارش نهایی");
+            XLSX.writeFile(wb, `Enterprise_Report_1405.xlsx`);
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
             position: relative;
             transition: all 0.2s ease;
             background: rgba(17, 24, 39, 0.3);
