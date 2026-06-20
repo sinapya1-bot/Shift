@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ساعت کاری شیفت شب ۱۴۰۵</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: #0d0d12;
+            color: #ffffff;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #27273a;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="pb-32 selection:bg-red-500/30">
+
+    <div class="max-w-md mx-auto px-4 pt-4">
+        <div class="flex justify-between items-center mb-6">
+            <button onclick="changeMonth(-1)" class="text-gray-400 hover:text-white text-xl p-2">❯</button>
+            <div class="text-center">
+                <h1 id="monthTitle" class="text-lg font-bold text-gray-200">فروردین ۱۴۰۵</h1>
+                <p id="todayLabel" class="text-[11px] text-red-500 font-medium mt-0.5">امروز: جمعه ۱۵ فروردین</p>
+            </div>
+            <button onclick="changeMonth(1)" class="text-gray-400 hover:text-white text-xl p-2">❮</button>
+        </div>
+
+        <div class="bg-[#16161f] border border-gray-950/40 rounded-2xl p-4 mb-5 shadow-xl">
+            <h2 class="text-center text-red-500 font-bold mb-4 text-xs tracking-wider">خلاصه ماه</h2>
+            <div class="grid grid-cols-3 gap-2 text-center">
+                <div class="bg-[#12121a] p-3 rounded-xl border border-gray-800/60">
+                    <span class="text-gray-400 text-[10px] block mb-1">کل کرایه</span>
+                    <span id="totalFareBadge" class="text-sm font-black text-white">۰</span>
+                    <span class="text-[9px] text-gray-500 block mt-0.5">تومان</span>
+                </div>
+                <div class="bg-[#12121a] p-3 rounded-xl border border-gray-800/60">
+                    <span class="text-gray-400 text-[10px] block mb-1">کل اضافه کاری</span>
+                    <span id="totalOtBadge" class="text-sm font-black text-red-500">۰۰:۰۰</span>
+                    <span class="text-[9px] text-gray-500 block mt-0.5">ساعت</span>
+                </div>
+                <div class="bg-[#12121a] p-3 rounded-xl border border-gray-800/60">
+                    <span class="text-gray-400 text-[10px] block mb-1">تعداد روز کارکرد</span>
+                    <span id="totalDaysBadge" class="text-sm font-black text-emerald-500">۰</span>
+                    <span class="text-[9px] text-gray-500 block mt-0.5">روز</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-12 gap-1 text-center text-[10px] text-gray-500 font-bold mb-2 px-3">
+            <div class="col-span-3 text-right">تاریخ / روز</div>
+            <div class="col-span-2">ورود</div>
+            <div class="col-span-2">خروج</div>
+            <div class="col-span-2">اضافه</div>
+            <div class="col-span-3 text-left">کرایه (تومان)</div>
+        </div>
+
+        <div id="daysList" class="space-y-2 max-h-[50vh] overflow-y-auto custom-scrollbar pr-1">
+            </div>
+
+        <div class="bg-[#16161f] border border-gray-950/40 rounded-2xl p-4 mt-6 shadow-xl">
+            <h3 class="text-center text-gray-400 font-medium mb-3 text-xs">نمودار اضافه کاری (ساعت)</h3>
+            <div class="h-32 w-full">
+                <canvas id="analyticsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#0d0d12]/95 backdrop-blur-md p-4 border-t border-gray-800/60 flex justify-between items-center">
+        <button onclick="exportToExcel()" class="bg-red-600 hover:bg-red-700 active:scale-95 transition text-white font-bold text-xs py-2.5 px-4 rounded-xl flex items-center gap-2 shadow-lg shadow-red-900/20">
+            <span>📊</span> خروجی اکسل
+        </button>
+        <div class="text-left">
+            <span class="text-gray-400 text-[10px] block">جمع کل کرایه:</span>
+            <span id="footerTotalFare" class="text-base font-black text-white">۰ تومان</span>
+        </div>
+    </div>
+
+    <script>
+        const weekdays = ['شنبه','یکشنبه','دوشنبه','سهشنبه','چهارشنبه','پنجشنبه','جمعه'];
+        // دیتای ماه‌ها مطابق با منطق خودت اما برای کل سال ۱۴۰۵
+        const monthsData = [
+            { name: 'فروردین', days: 31, index: 1, startWd: 6 }, // شروع فروردین ۱۴۰۵ از جمعه
+            { name: 'اردیبهشت', days: 31, index: 2, startWd: 2 },
+            { name: 'خرداد', days: 31, index: 3, startWd: 5 },
+            { name: 'تیر', days: 31, index: 4, startWd: 0 },
+            { name: 'مرداد', days: 31, index: 5, startWd: 2 },
+            { name: 'شهریور', days: 31, index: 6, startWd: 5 },
+            { name: 'مهر', days: 30, index: 7, startWd: 1 },
+            { name: 'آبان', days: 30, index: 8, startWd: 4 },
+            { name: 'آذر', days: 30, index: 9, startWd: 6 },
+            { name: 'دی', days: 30, index: 10, startWd: 1 },
+            { name: 'بهمن', days: 30, index: 11, startWd: 4 },
+            { name: 'اسفند', days: 29, index: 12, startWd: 0 }
+        ];
+
+        const holidays = {
+            "1405-01-01": "عید نوروز", "1405-01-02": "عید نوروز", "1405-01-03": "عید نوروز", "1405-01-04": "عید نوروز", "1405-01-12": "روز جمهوری اسلامی", "1405-01-13": "سیزده بدر",
+            "1405-03-06":"عید قربان","1405-03-14":"رحلت امام","1405-03-15":"۱۵ خرداد",
+            "1405-04-03":"تاسوعا","1405-04-04":"عاشورا",
+            "1405-05-13":"اربعین","1405-05-21":"رحلت پیامبر","1405-05-22":"شهادت امام رضا","1405-05-30":"شهادت امام عسکری",
+            "1405-06-08":"میلاد پیامبر",
+            "1405-10-02":"ولادت امام علی","1405-10-16":"مبعث",
+            "1405-11-05":"نیمه شعبان","1405-11-22":"۲۲ بهمن"
+        };
+
+        let currentMonthIdx = 0; // فروردین
+        let chartInstance = null;
+        let monthlyRecords = {}; // ذخیره لوکال دیتای وارد شده کاربر
+
+        function initApp() {
+            renderMonth(currentMonthIdx);
+            initChart();
+        }
+
+        function changeMonth(dir) {
+            currentMonthIdx += dir;
+            if (currentMonthIdx < 0) currentMonthIdx = 11;
+            if (currentMonthIdx > 11) currentMonthIdx = 0;
+            renderMonth(currentMonthIdx);
+            updateCalculations();
+        }
+
+        function renderMonth(idx) {
+            const m = monthsData[idx];
+            document.getElementById('monthTitle').innerText = `${m.name} ۱۴۰۵`;
+            
+            const listContainer = document.getElementById('daysList');
+            listContainer.innerHTML = '';
+            
+            let wd = m.startWd;
+
+            for (let d = 1; d <= m.days; d++) {
+                let dateStr = `1405-${String(m.index).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                let dayName = weekdays[wd];
+                let isFriday = (wd === 6);
+                let isHoliday = !!holidays[dateStr];
+                
+                // بازیابی اطلاعات قبلی در صورت وجود
+                let saved = monthlyRecords[dateStr] || {
+                    checked: !(isFriday || isHoliday),
+                    in: (isFriday || isHoliday) ? '' : '19:00',
+                    out: (isFriday || isHoliday) ? '' : '08:00',
+                    fare: (isFriday || isHoliday) ? '' : '1,000,000'
+                };
+
+                let rowBg = isHoliday ? 'bg-red-950/20 border-red-900/30' : isFriday ? 'bg-purple-950/10 border-purple-900/20' : 'bg-[#16161f] border-gray-800/40';
+                let labelColor = isHoliday ? 'text-red-400 font-bold' : isFriday ? 'text-purple-400' : 'text-gray-300';
+
+                let rowHtml = `
+                    <div class="grid grid-cols-12 gap-1 items-center p-2 rounded-xl text-center text-xs border ${rowBg}" data-date="${dateStr}" data-holiday="${isHoliday || isFriday}">
+                        <div class="col-span-3 text-right flex items-center gap-1.5">
+                            <input type="checkbox" ${saved.checked ? 'checked' : ''} onchange="rowChanged(this)" class="chk accent-red-500 h-4 w-4 rounded-md bg-gray-900 border-gray-700">
+                            <div class="leading-tight">
+                                <span class="text-[10px] block font-bold ${labelColor}">${d} ${m.name}</span>
+                                <span class="text-[9px] text-gray-500 block">${dayName} ${isHoliday ? '• ' + holidays[dateStr] : ''}</span>
+                            </div>
+                        </div>
+                        <div class="col-span-2"><input type="time" value="${saved.in}" oninput="updateCalculations()" class="in w-full bg-[#1c1c27] text-white p-1 rounded-md border border-gray-800 text-center text-[11px]"></div>
+                        <div class="col-span-2"><input type="time" value="${saved.out}" oninput="updateCalculations()" class="out w-full bg-[#1c1c27] text-white p-1 rounded-md border border-gray-800 text-center text-[11px]"></div>
+                        <div class="col-span-2 text-red-400 font-bold text-[11px] ot-cell">۰۰:۰۰</div>
+                        <div class="col-span-3"><input type="text" value="${saved.fare}" oninput="formatMoneyInput(this)" class="money w-full bg-[#1c1c27] text-white font-bold p-1 rounded-md border border-gray-800 text-left px-2 text-[11px]"></div>
+                    </div>
+                `;
+                listContainer.insertAdjacentHTML('beforeend', rowHtml);
+                wd = (wd + 1) % 7;
+            }
+            updateCalculations();
+        }
+
+        function rowChanged(chk) {
+            let row = chk.closest('[data-date]');
+            let isHoliday = row.getAttribute('data-holiday') === 'true';
+            if (chk.checked && isHoliday) {
+                row.querySelector('.in').value = '19:00';
+                row.querySelector('.out').value = '08:00';
+            }
+            updateCalculations();
+        }
+
+        function formatMoneyInput(input) {
+            let val = input.value.replace(/[^\d]/g, '');
+            input.value = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            
+            let row = input.closest('[data-date]');
+            let chk = row.querySelector('.chk');
+            if (input.value !== '' && !chk.checked) {
+                chk.checked = true;
+            }
+            updateCalculations();
+        }
+
+        function updateCalculations() {
+            let totalFare = 0, totalDays = 0, totalOtMinutes = 0;
+            let dailyOtHours = [];
+            let dailyLabels = [];
+
+            const rows = document.querySelectorAll('#daysList > div');
+            rows.forEach((row, i) => {
+                let dateStr = row.getAttribute('data-date');
+                let chk = row.querySelector('.chk').checked;
+                let inVal = row.querySelector('.in').value;
+                let outVal = row.querySelector('.out').value;
+                let fareVal = parseInt(row.querySelector('.money').value.replace(/,/g, '')) || 0;
+                let isHoliday = row.getAttribute('data-holiday') === 'true';
+
+                // ذخیره وضعیت در دیتابیس لوکال
+                monthlyRecords[dateStr] = { checked: chk, in: inVal, out: outVal, fare: row.querySelector('.money').value };
+
+                let otHours = 0;
+
+                if (chk) {
+                    totalDays++;
+                    totalFare += fareVal;
+
+                    if (inVal && outVal) {
+                        let [ih, im] = inVal.split(':').map(Number);
+                        let [oh, om] = outVal.split(':').map(Number);
+                        let startMin = ih * 60 + im;
+                        let endMin = oh * 60 + om;
+                        if (endMin < startMin) endMin += 1440;
+                        let totalMinutes = endMin - startMin;
+
+                        if (isHoliday) {
+                            otHours = totalMinutes / 60;
+                        } else {
+                            if (endMin > 1080) { // منطق شیفت شب و اضافه کاری شما
+                                let otStart = Math.max(startMin, 1080);
+                                let otEnd = Math.min(endMin, 1200);
+                                if (otEnd > otStart) otHours = (otEnd - otStart) / 60;
+                            }
+                        }
+                    }
+                }
+
+                totalOtMinutes += otHours * 60;
+                row.querySelector('.ot-cell').innerText = otHours > 0 ? otHours.toFixed(1) : '—';
+                
+                dailyOtHours.push(otHours);
+                dailyLabels.push(i + 1);
+            });
+
+            // فرمت ساعت اضافه کاری به شکل HH:MM
+            let otH = Math.floor(totalOtMinutes / 60);
+            let otM = Math.round(totalOtMinutes % 60);
+            
+            document.getElementById('totalFareBadge').innerText = totalFare.toLocaleString('fa-IR');
+            document.getElementById('footerTotalFare').innerText = `${totalFare.toLocaleString('fa-IR')} تومان`;
+            document.getElementById('totalOtBadge').innerText = `${String(otH).padStart(2,'0')}:${String(otM).padStart(2,'0')}`;
+            document.getElementById('totalDaysBadge').innerText = totalDays.toLocaleString('fa-IR');
+
+            if (chartInstance) {
+                chartInstance.data.labels = dailyLabels;
+                chartInstance.data.datasets[0].data = dailyOtHours;
+                chartInstance.update();
+            }
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('analyticsChart').getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'اضافه کاری',
+                        data: [],
+                        backgroundColor: '#ef4444',
+                        borderRadius: 4,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#6b7280', font: { size: 8 } } },
+                        y: { grid: { color: '#27273a' }, ticks: { color: '#6b7280', font: { size: 8 } } }
+                    }
+                }
+            });
+        }
+
+        function exportToExcel() {
+            let data = [["تاریخ", "ورود", "خروج", "کرایه (تومان)"]];
+            for (let date in monthlyRecords) {
+                let rec = monthlyRecords[date];
+                if (rec.checked) {
+                    data.push([date, rec.in, rec.out, rec.fare.replace(/,/g, '')]);
+                }
+            }
+            let ws = XLSX.utils.aoa_to_sheet(data);
+            let wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "شیفت شب");
+            XLSX.writeFile(wb, `Shift_Night_1405.xlsx`);
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
