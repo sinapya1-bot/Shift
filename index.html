@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Enterprise Shift Calendar 1405</title>
+    <title>Enterprise Shift & AI Calendar 1405</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -12,7 +12,7 @@
         body {
             font-family: 'Vazirmatn', sans-serif;
             -webkit-tap-highlight-color: transparent;
-            background-color: #0b0c10; /* مشکی ملایم‌تر و زغال‌سنگی */
+            background-color: #0b0c10;
             color: #f4f4f5;
             transition: all 0.3s ease;
             overflow-x: hidden;
@@ -49,7 +49,7 @@
             background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(0, 0, 0, 0.05);
         }
 
-        /* دایره‌های پروگرس چرخشی با رنگ‌های متنوع‌تر */
+        /* دایره‌های پروگرس چرخشی */
         .circle-progress-wrapper {
             position: relative; width: 70px; height: 70px;
             display: flex; align-items: center; justify-content: center;
@@ -69,26 +69,13 @@
         }
         .flash-today { animation: flashHighlight 1.5s ease-out; scroll-margin-top: 80px; }
 
-        /* استایل دابل کلیک: خط صاف روی کل ردیف + بلور */
-        .scratched-row {
-            position: relative;
-            opacity: 0.35 !important;
-            filter: blur(0.7px);
-        }
+        /* استایل دابل کلیک */
+        .scratched-row { position: relative; opacity: 0.35 !important; filter: blur(0.7px); }
         .scratched-row::after {
-            content: "";
-            position: absolute;
-            left: 0;
-            right: 0;
-            top: 50%;
-            height: 1.5px;
-            background-color: rgba(16, 185, 129, 0.6);
-            z-index: 10;
-            pointer-events: none;
+            content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1.5px;
+            background-color: rgba(16, 185, 129, 0.6); z-index: 10; pointer-events: none;
         }
-        body.theme-pastel .scratched-row::after {
-            background-color: rgba(16, 185, 129, 0.8);
-        }
+        body.theme-pastel .scratched-row::after { background-color: rgba(16, 185, 129, 0.8); }
         .scratched-row input, .scratched-row .cb-wrapper { pointer-events: none !important; }
 
         /* انیمیشن اتمام ماه */
@@ -98,58 +85,50 @@
         }
         .month-finished { animation: monthCompletedGlow 2s ease-in-out infinite; border-width: 1.5px !important; }
 
-        /* ساختار و انیمیشن پریمیوم چک‌باکس سفارشی */
-        .cb-wrapper {
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-            cursor: pointer;
-        }
-        .cb-input {
-            position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 2;
-        }
+        /* چک‌باکس سفارشی */
+        .cb-wrapper { position: relative; display: inline-flex; align-items: center; cursor: pointer; }
+        .cb-input { position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 2; }
         .cb-custom {
-            width: 18px; height: 18px;
-            border: 1.5px solid #4b5563;
-            border-radius: 6px;
-            position: relative;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            background: rgba(31, 41, 55, 0.5);
+            width: 18px; height: 18px; border: 1.5px solid #4b5563; border-radius: 6px;
+            position: relative; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); background: rgba(31, 41, 55, 0.5);
             display: flex; align-items: center; justify-content: center;
         }
-        body.theme-pastel .cb-custom {
-            border-color: #cbd5e1; background: #ffffff;
-        }
+        body.theme-pastel .cb-custom { border-color: #cbd5e1; background: #ffffff; }
         .cb-custom::after {
-            content: '';
-            width: 4px; height: 8px;
-            border: solid #ffffff;
-            border-width: 0 2px 2px 0;
-            transform: rotate(45deg) scale(0);
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            margin-bottom: 1.5px;
+            content: ''; width: 4px; height: 8px; border: solid #ffffff; border-width: 0 2px 2px 0;
+            transform: rotate(45deg) scale(0); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); margin-bottom: 1.5px;
         }
-        .cb-input:checked + .cb-custom {
-            background: #10b981;
-            border-color: #10b981;
-            box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+        .cb-input:checked + .cb-custom { background: #10b981; border-color: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.4); }
+        .cb-input:checked + .cb-custom::after { transform: rotate(45deg) scale(1); }
+
+        /* قفل سیستم و انیمیشن لرزش */
+        @keyframes lockPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); color: #ef4444; } }
+        .system-locked-active #btnHeaderLock { animation: lockPulse 1s infinite ease-in-out; color: #ef4444; }
+        .system-locked-active input, .system-locked-active .cb-input { pointer-events: none !important; opacity: 0.5; }
+        .system-locked-active .day-row { opacity: 0.6; }
+
+        /* انیمیشن ذخیره شناور */
+        @keyframes saveSuccessAnimation {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2) rotate(-10deg); box-shadow: 0 0 20px #10b981; }
+            100% { transform: scale(1) rotate(0); }
         }
-        .cb-input:checked + .cb-custom::after {
-            transform: rotate(45deg) scale(1);
-        }
+        .save-success-effect { animation: saveSuccessAnimation 0.5s ease-in-out; }
     </style>
 </head>
 <body class="theme-neon pb-60 selection:bg-emerald-500/10" id="appBody">
 
-    <!-- ویجت شناور حقوق دریافتی -->
-    <div class="fixed bottom-32 right-4 z-50 ruix-card border border-emerald-500/20 shadow-2xl p-2.5 rounded-xl flex flex-col items-center min-w-[100px] pointer-events-none backdrop-blur-md">
+    <div class="fixed bottom-32 right-4 z-40 ruix-card border border-emerald-500/20 shadow-2xl p-2.5 rounded-xl flex flex-col items-center min-w-[100px] pointer-events-none backdrop-blur-md">
         <span class="text-zinc-500 text-[8px] font-bold mb-0.5" id="lblFloatingSalary">حقوق دریافتی</span>
         <span id="floatingSalaryWidget" class="text-[11px] font-black text-emerald-400">۰</span>
         <span class="text-[7px] text-zinc-600" id="lblFloatingCurrency">تومان</span>
     </div>
 
+    <button id="floatingSaveBtn" onclick="triggerManualSave()" class="fixed bottom-32 left-4 z-40 bg-emerald-600 hover:bg-emerald-500 text-white shadow-2xl w-11 h-11 rounded-xl flex items-center justify-center transition-all border border-emerald-500/30">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+    </button>
+
     <div class="max-w-md mx-auto px-4 pt-5" id="swipeZone">
-        <!-- هدر پنل -->
         <div class="flex justify-between items-center mb-5">
             <div class="flex items-center gap-2.5">
                 <div class="w-1 h-5 bg-emerald-400 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
@@ -158,13 +137,31 @@
                     <p class="text-[9px] text-zinc-500 font-medium" id="lblSubHeader">پلتفرم مدیریت کارکرد ۱۴۰۵</p>
                 </div>
             </div>
-            <div class="flex gap-2">
+            <div class="flex gap-2 items-center">
+                <button id="btnHeaderLock" onclick="toggleLockState()" class="p-2 rounded-xl bg-zinc-900/40 border border-zinc-800/60 transition-colors text-zinc-400 text-xs">
+                    <span id="lockIconText">🔓</span>
+                </button>
                 <button onclick="toggleCalendarViewModal()" class="p-2 rounded-xl bg-zinc-900/40 border border-zinc-800/60 hover:border-zinc-700 transition-colors text-zinc-400 text-sm">📅</button>
                 <button onclick="toggleSettingsModal()" class="p-2 rounded-xl bg-zinc-900/40 border border-zinc-800/60 hover:border-zinc-700 transition-colors text-zinc-400 text-sm">⚙️</button>
             </div>
         </div>
 
-        <!-- ناوبری ماه‌ها -->
+        <div class="ruix-card rounded-2xl p-3.5 mb-5 border border-purple-500/10 shadow-xl bg-gradient-to-br from-zinc-900/40 to-purple-950/5">
+            <div class="flex justify-between items-center mb-1.5">
+                <div class="flex items-center gap-1.5 text-purple-400 font-bold text-[10px]">
+                    <span>🧠</span>
+                    <span id="lblAiTitle">تخمین لایو هوش مصنوعی (بدون کرایه)</span>
+                </div>
+                <span id="aiBaseMonthBadge" class="text-[8px] px-2 py-0.5 bg-purple-500/10 text-purple-400 rounded-full font-bold">مبنا: ثبت نشده</span>
+            </div>
+            <div id="aiPredictionDisplay" class="text-sm font-black text-zinc-100 mb-2">در حال محاسبه داده‌ها...</div>
+            
+            <div class="w-full bg-zinc-950 h-1.5 rounded-full overflow-hidden border border-zinc-900">
+                <div id="aiProgressBar" class="h-full bg-gradient-to-l from-purple-500 to-indigo-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <span id="aiMetricsSummary" class="text-[7.5px] text-zinc-500 block mt-1.5">سرعت کارکرد شما بر مبنای ماه انتخابی تنظیمات ارزیابی می‌شود.</span>
+        </div>
+
         <div id="monthCardContainer" class="ruix-card rounded-2xl p-3 mb-5 flex justify-between items-center shadow-lg border border-transparent transition-all duration-300">
             <button onclick="changeMonth(-1)" class="text-zinc-500 hover:text-emerald-400 p-1 transition-colors">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
@@ -175,7 +172,6 @@
             </button>
         </div>
 
-        <!-- حلقه‌های اینفوگرافیک با رنگ‌بندی جدید و زنده -->
         <div class="grid grid-cols-3 gap-2 mb-6 text-center">
             <div class="ruix-card py-3 rounded-2xl flex flex-col items-center justify-center gap-1.5 border border-zinc-800/30">
                 <div class="circle-progress-wrapper">
@@ -211,7 +207,6 @@
             </div>
         </div>
 
-        <!-- عناوین جدول -->
         <div class="grid grid-cols-12 gap-1 text-center text-[9px] text-zinc-500 font-bold mb-2 px-2" id="listHeaders">
             <div class="col-span-2 text-right pr-1" id="hdrStatus">وضعیت</div>
             <div class="col-span-3 text-right" id="hdrDate">توالی تقویم</div>
@@ -221,10 +216,8 @@
             <div class="col-span-2 text-left pl-1" id="hdrFare">کرایه</div>
         </div>
 
-        <!-- اسکرولر ردیف‌ها -->
         <div id="daysList" class="space-y-1.5 max-h-[44vh] overflow-y-auto custom-scrollbar pr-0.5"></div>
 
-        <!-- پنل ورودی حقوق دریافتی ته ماه -->
         <div class="ruix-card rounded-2xl p-4 mt-4 border border-zinc-900 shadow-xl">
             <div class="flex justify-between items-center gap-4">
                 <div class="flex items-center gap-2">
@@ -236,7 +229,6 @@
         </div>
     </div>
 
-    <!-- مۆدال تقویم شبکه‌ای ماهانه -->
     <div id="calendarViewModal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md">
         <div class="ruix-card border border-zinc-800 rounded-3xl w-full max-w-sm p-5 shadow-2xl">
             <div class="flex justify-between items-center mb-4 border-b border-zinc-800/60 pb-2">
@@ -249,16 +241,9 @@
             </div>
 
             <div id="calendarGridCells" class="grid grid-cols-7 gap-2 text-center"></div>
-            
-            <div class="flex justify-center gap-4 mt-5 pt-3 border-t border-zinc-900/60 text-[8px] text-zinc-400 font-bold">
-                <div class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-emerald-500"></div><span>شیفت فعال</span></div>
-                <div class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-rose-500"></div><span>تعطیل رسمی</span></div>
-                <div class="flex items-center gap-1"><div class="w-2 h-2 rounded-full border border-emerald-500"></div><span>امروز</span></div>
-            </div>
         </div>
     </div>
 
-    <!-- فوتر منو -->
     <div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#0b0c10]/95 border-t border-zinc-900/60 shadow-2xl z-40 pb-safe" id="footerMenu">
         <div class="flex justify-between items-center p-3 px-4 border-b border-zinc-900/20">
             <button onclick="exportToExcel()" class="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 transition-all text-white font-bold text-[9px] py-2 px-4 rounded-xl flex items-center gap-1.5 shadow-lg" id="btnExcel">
@@ -285,7 +270,6 @@
         </div>
     </div>
 
-    <!-- مۆدال تنظیمات پیشرفته -->
     <div id="settingsModal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md">
         <div class="ruix-card border border-zinc-800 rounded-3xl w-full max-w-sm p-5 max-h-[85vh] overflow-y-auto custom-scrollbar">
             <div class="flex justify-between items-center mb-4 border-b border-zinc-800 pb-2">
@@ -293,26 +277,73 @@
                 <button onclick="toggleSettingsModal()" class="text-zinc-500 text-sm font-bold">✕</button>
             </div>
 
-            <!-- زبان -->
-            <div class="mb-4">
-                <label class="text-[10px] text-zinc-500 block mb-1.5 font-bold">زبان پلتفرم (Language)</label>
+            <div class="mb-4 bg-zinc-950/40 p-3 rounded-2xl border border-zinc-900/60">
+                <label class="text-[10px] text-zinc-400 block mb-1.5 font-bold">مکانیزم محافظتی رایت-لاک (Write-Lock)</label>
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                    <div>
+                        <span class="text-[8px] text-zinc-500 block mb-1">وضعیت قفل خودکار</span>
+                        <select id="cfgAutoLockToggle" onchange="changeAutoLockStatus()" class="time-input w-full p-1.5 rounded-lg text-xs font-bold">
+                            <option value="active">فعال</option>
+                            <option value="disabled">غیرفعال (آف)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <span class="text-[8px] text-zinc-500 block mb-1">زمان انتظار (ثانیه)</span>
+                        <input type="number" id="cfgAutoLockSeconds" value="10" min="3" oninput="changeAutoLockSeconds()" class="time-input w-full p-1.5 rounded-lg text-xs font-bold">
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-4 bg-purple-950/10 p-3 rounded-2xl border border-purple-900/30">
+                <label class="text-[10px] text-purple-400 block mb-1.5 font-bold">تنظیم دستی تاریخ امروز سیستم (سینک لایو AI)</label>
+                <div class="flex items-center justify-between bg-zinc-900/50 p-2 rounded-xl">
+                    <button onclick="adjustTodaySystemDay(-1)" class="w-8 h-8 bg-zinc-950 text-purple-400 rounded-lg font-bold hover:bg-purple-900/20 transition-colors">-۱</button>
+                    <span id="sysTodayDayBadge" class="text-xs font-black text-zinc-200">روز ۲۱ ماه</span>
+                    <button onclick="adjustTodaySystemDay(1)" class="w-8 h-8 bg-zinc-950 text-purple-400 rounded-lg font-bold hover:bg-purple-900/20 transition-colors">+۱</button>
+                </div>
+            </div>
+
+            <div class="mb-4 bg-zinc-950/30 p-3 rounded-2xl border border-zinc-900">
+                <label class="text-[10px] text-zinc-400 block mb-2 font-bold">تنظیم ساختار ماه مبنا برای الگوریتم هوش مصنوعی</label>
+                <div class="mb-2">
+                    <span class="text-[8px] text-zinc-500 block mb-1">انتخاب ماه مبنا</span>
+                    <select id="cfgAiMonthSelect" onchange="changeAiBaseConfig()" class="time-input w-full p-1.5 rounded-lg text-xs font-bold">
+                        <option value="2">خرداد</option>
+                        <option value="1">اردیبهشت</option>
+                        <option value="0">فروردین</option>
+                        <option value="3">تیر</option>
+                    </select>
+                </div>
                 <div class="grid grid-cols-2 gap-2">
-                    <button onclick="changeLanguage('fa')" id="langFa" class="p-2 text-[10px] font-bold rounded-xl bg-emerald-500 text-white">فارسی</button>
-                    <button onclick="changeLanguage('en')" id="langEn" class="p-2 text-[10px] font-bold rounded-xl bg-zinc-900 text-zinc-400">English</button>
+                    <div>
+                        <span class="text-[8px] text-zinc-500 block mb-1">حقوق دریافتی آن ماه</span>
+                        <input type="text" id="cfgAiBaseSalary" value="44,000,000" oninput="moneyInputTriggerAi(this)" class="time-input w-full p-1.5 rounded-lg text-xs font-bold">
+                    </div>
+                    <div>
+                        <span class="text-[8px] text-zinc-500 block mb-1">کل ساعت کارکرد آن ماه</span>
+                        <input type="number" id="cfgAiBaseHours" value="220" oninput="changeAiBaseConfig()" class="time-input w-full p-1.5 rounded-lg text-xs font-bold">
+                    </div>
                 </div>
             </div>
 
-            <!-- تم چندرنگ -->
-            <div class="mb-4">
-                <label class="text-[10px] text-zinc-500 block mb-1.5 font-bold">شخصی‌سازی تم دیداری</label>
-                <div class="grid grid-cols-3 gap-1.5">
-                    <button onclick="setAppTheme('neon')" class="p-1.5 text-[9px] font-bold rounded-lg bg-zinc-900 border border-emerald-500/30 text-emerald-400">نئون دارک</button>
-                    <button onclick="setAppTheme('pastel')" class="p-1.5 text-[9px] font-bold rounded-lg bg-emerald-100 border border-emerald-300 text-emerald-800">پاستیل سبز</button>
-                    <button onclick="setAppTheme('amoled')" class="p-1.5 text-[9px] font-bold rounded-lg bg-black border border-zinc-800 text-zinc-300">Amoled</button>
+            <div class="mb-4 grid grid-cols-2 gap-2">
+                <div>
+                    <label class="text-[10px] text-zinc-500 block mb-1.5 font-bold">زبان پلتفرم</label>
+                    <div class="grid grid-cols-2 gap-1">
+                        <button onclick="changeLanguage('fa')" id="langFa" class="p-1.5 text-[9px] font-bold rounded-lg bg-emerald-500 text-white">فارسی</button>
+                        <button onclick="changeLanguage('en')" id="langEn" class="p-1.5 text-[9px] font-bold rounded-lg bg-zinc-900 text-zinc-400">En</button>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[10px] text-zinc-500 block mb-1.5 font-bold">شخصی‌سازی تم</label>
+                    <div class="grid grid-cols-3 gap-1">
+                        <button onclick="setAppTheme('neon')" class="p-1 text-[8px] font-bold rounded-md bg-zinc-900 border border-emerald-500/20 text-emerald-400">نئون</button>
+                        <button onclick="setAppTheme('pastel')" class="p-1 text-[8px] font-bold rounded-md bg-emerald-100 border border-emerald-200 text-emerald-800">پاستیل</button>
+                        <button onclick="setAppTheme('amoled')" class="p-1 text-[8px] font-bold rounded-md bg-black border border-zinc-800 text-zinc-300">امولد</button>
+                    </div>
                 </div>
             </div>
 
-            <!-- ساعت‌های پیش‌فرض -->
             <div class="mb-4 bg-zinc-950/40 p-3 rounded-2xl border border-zinc-900">
                 <label class="text-[10px] text-zinc-400 block mb-2 font-bold">ساعت‌های ورود و خروج پیش‌فرض</label>
                 <div class="grid grid-cols-2 gap-2 mb-3">
@@ -331,7 +362,6 @@
                 </div>
             </div>
 
-            <!-- تنظیم آفست روزها (به تفکیک ماه) -->
             <div class="mb-4">
                 <label class="text-[10px] text-zinc-500 block mb-1 font-bold">تنظیم خطای نام روزها (مخصوص این ماه)</label>
                 <div class="flex items-center justify-between bg-zinc-900/30 p-2 rounded-xl">
@@ -341,7 +371,6 @@
                 </div>
             </div>
 
-            <!-- مدیریت تعطیلات -->
             <div class="mb-4">
                 <label class="text-[10px] text-zinc-500 block mb-1.5 font-bold">مدیریت تعطیلات رسمی ماه جاری</label>
                 <div id="cfgHolidaysList" class="space-y-1 max-h-24 overflow-y-auto custom-scrollbar p-1.5 bg-zinc-950/50 rounded-xl text-[10px]"></div>
@@ -395,27 +424,26 @@
         };
 
         let currentMonthIdx = 2; 
+        let systemTodayDay = 21; 
+        let isSystemLocked = false;
+        let userActivityTimer;
+
         let appStorage = JSON.parse(localStorage.getItem('ruix_shift_v4_1405')) || {};
         let config = JSON.parse(localStorage.getItem('ruix_config_v4')) || {
             lang: 'fa', theme: 'neon', dayOffsets: {}, defIn: '19:00', defOut: '08:00',
-            monthDefTimes: {}, customizedHolidays: { ...defaultHolidays }
+            monthDefTimes: {}, customizedHolidays: { ...defaultHolidays },
+            autoLockActive: true, autoLockSeconds: 10,
+            aiBaseMonthIdx: 2, aiBaseSalary: "44,000,000", aiBaseHours: 220
         };
 
-        // یکپارچه‌سازی نسخه قدیمی کانفیگ به ساختار جدید (در صورت وجود)
-        if (typeof config.dayOffsets !== 'object') {
-            config.dayOffsets = {};
-            if (typeof config.dayOffset === 'number') {
-                config.dayOffsets[`m_${currentMonthIdx}`] = config.dayOffset;
-            }
-        }
-
-        let touchStartX = 0;
-        let touchEndX = 0;
+        let touchStartX = 0, touchEndX = 0;
 
         function initApp() {
             setAppTheme(config.theme);
             changeLanguage(config.lang);
             setupSwipeGestures();
+            initAutoLockListener();
+            updateAiUIElements();
         }
 
         function setAppTheme(t) {
@@ -456,8 +484,8 @@
                 '<div>ش</div><div>ی</div><div>د</div><div>س</div><div>چ</div><div>پ</div><div>ج</div>' :
                 '<div>Sa</div><div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div>';
 
-            document.getElementById('langFa').className = l === 'fa' ? "p-2 text-[10px] font-bold rounded-xl bg-emerald-500 text-white" : "p-2 text-[10px] font-bold rounded-xl bg-zinc-900 text-zinc-400";
-            document.getElementById('langEn').className = l === 'en' ? "p-2 text-[10px] font-bold rounded-xl bg-emerald-500 text-white" : "p-2 text-[10px] font-bold rounded-xl bg-zinc-900 text-zinc-400";
+            document.getElementById('langFa').className = l === 'fa' ? "p-1.5 text-[9px] font-bold rounded-lg bg-emerald-500 text-white" : "p-1.5 text-[9px] font-bold rounded-lg bg-zinc-900 text-zinc-400";
+            document.getElementById('langEn').className = l === 'en' ? "p-1.5 text-[9px] font-bold rounded-lg bg-emerald-500 text-white" : "p-1.5 text-[9px] font-bold rounded-lg bg-zinc-900 text-zinc-400";
 
             renderMonth(currentMonthIdx);
         }
@@ -469,9 +497,98 @@
         }
 
         function handleSwipeDirection() {
+            if (isSystemLocked) return;
             const threshold = 75;
             if (touchEndX < touchStartX - threshold) { config.lang === 'fa' ? changeMonth(1) : changeMonth(-1); }
             if (touchEndX > touchStartX + threshold) { config.lang === 'fa' ? changeMonth(-1) : changeMonth(1); }
+        }
+
+        // سیستم قفل رایت-لاک هوشمند و دستی
+        function initAutoLockListener() {
+            const resetTimer = () => {
+                if (isSystemLocked) return;
+                clearTimeout(userActivityTimer);
+                if (config.autoLockActive) {
+                    userActivityTimer = setTimeout(lockSystemAutomated, config.autoLockSeconds * 1000);
+                }
+            };
+            ['mousemove', 'mousedown', 'keypress', 'touchstart', 'scroll'].forEach(evt => {
+                document.addEventListener(evt, resetTimer, { passive: true });
+            });
+            resetTimer();
+        }
+
+        function lockSystemAutomated() {
+            if (isSystemLocked) return;
+            isSystemLocked = true;
+            applyLockUI(true);
+        }
+
+        function toggleLockState() {
+            isSystemLocked = !isSystemLocked;
+            applyLockUI(isSystemLocked);
+        }
+
+        function applyLockUI(locked) {
+            const body = document.getElementById('appBody');
+            const icon = document.getElementById('lockIconText');
+            if (locked) {
+                body.classList.add('system-locked-active');
+                icon.innerText = "🔒";
+            } else {
+                body.classList.remove('system-locked-active');
+                icon.innerText = "🔓";
+                clearTimeout(userActivityTimer);
+                if (config.autoLockActive) {
+                    userActivityTimer = setTimeout(lockSystemAutomated, config.autoLockSeconds * 1000);
+                }
+            }
+        }
+
+        function changeAutoLockStatus() {
+            config.autoLockActive = document.getElementById('cfgAutoLockToggle').value === 'active';
+            saveConfig();
+            clearTimeout(userActivityTimer);
+            initAutoLockListener();
+        }
+
+        function changeAutoLockSeconds() {
+            let sec = parseInt(document.getElementById('cfgAutoLockSeconds').value) || 10;
+            if (sec < 3) sec = 3;
+            config.autoLockSeconds = sec;
+            saveConfig();
+        }
+
+        function adjustTodaySystemDay(dir) {
+            systemTodayDay += dir;
+            if (systemTodayDay < 1) systemTodayDay = 1;
+            if (systemTodayDay > 31) systemTodayDay = 31;
+            document.getElementById('sysTodayDayBadge').innerText = config.lang === 'fa' ? `روز ${systemTodayDay} ماه` : `Day ${systemTodayDay}`;
+            renderMonth(currentMonthIdx);
+        }
+
+        function updateAiUIElements() {
+            document.getElementById('cfgAutoLockToggle').value = config.autoLockActive ? 'active' : 'disabled';
+            document.getElementById('cfgAutoLockSeconds').value = config.autoLockSeconds;
+            document.getElementById('sysTodayDayBadge').innerText = config.lang === 'fa' ? `روز ${systemTodayDay} ماه` : `Day ${systemTodayDay}`;
+            document.getElementById('cfgAiMonthSelect').value = config.aiBaseMonthIdx || 2;
+            document.getElementById('cfgAiBaseSalary').value = config.aiBaseSalary || "44,000,000";
+            document.getElementById('cfgAiBaseHours').value = config.aiBaseHours || 220;
+        }
+
+        function changeAiBaseConfig() {
+            config.aiBaseMonthIdx = parseInt(document.getElementById('cfgAiMonthSelect').value);
+            config.aiBaseHours = parseFloat(document.getElementById('cfgAiBaseHours').value) || 1;
+            saveConfig();
+            updateCalculations();
+        }
+
+        function moneyInputTriggerAi(input) {
+            let val = input.value.replace(/[^\d]/g, '');
+            input.value = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            config.aiBaseSalary = input.value;
+            saveConfig();
+            updateCalculations();
         }
 
         function toggleSettingsModal() {
@@ -480,6 +597,7 @@
             if (!m.classList.contains('hidden')) {
                 let currentOffset = config.dayOffsets[`m_${currentMonthIdx}`] || 0;
                 document.getElementById('offsetValBadge').innerText = (currentOffset > 0 ? '+' : '') + currentOffset + (config.lang === 'fa' ? ' روز' : ' Days');
+                updateAiUIElements();
                 renderHolidaysManager();
             }
         }
@@ -491,15 +609,17 @@
         }
 
         function changeMonth(dir) {
+            if (isSystemLocked) return;
             currentMonthIdx = (currentMonthIdx + dir + 12) % 12;
             renderMonth(currentMonthIdx);
         }
 
         function goToToday() {
+            if (isSystemLocked) return;
             currentMonthIdx = 2; 
             renderMonth(currentMonthIdx);
             setTimeout(() => {
-                const todayRow = document.getElementById('day-row-25'); 
+                const todayRow = document.getElementById(`day-row-${systemTodayDay}`); 
                 if(todayRow) {
                     todayRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     todayRow.classList.add('flash-today');
@@ -544,7 +664,7 @@
                 let rowBorder = isHoliday ? 'border-rose-900/40 bg-rose-950/10' : isFriday ? 'border-purple-900/40 bg-purple-950/10' : 'border-zinc-800/40 bg-zinc-900/10 dark:bg-zinc-900/20';
                 let labelColor = isHoliday ? 'text-rose-400 font-bold' : isFriday ? 'text-purple-400 font-bold' : 'text-zinc-300';
                 
-                let isFixedToday = (idx === 2 && d === 25);
+                let isFixedToday = (idx === 2 && d === systemTodayDay);
                 if(isFixedToday) rowBorder += ' border-emerald-500/50';
 
                 let rowClass = `grid grid-cols-12 gap-1 items-center p-2 rounded-xl text-center text-xs border ${rowBorder} day-row transition-all duration-200`;
@@ -579,7 +699,6 @@
             gridContainer.innerHTML = '';
             const m = monthsConfig[currentMonthIdx];
             let currentOffset = config.dayOffsets[`m_${currentMonthIdx}`] || 0;
-            
             let alignedStartIndex = (m.startWdIndex + currentOffset + 70) % 7;
 
             for(let f = 0; f < alignedStartIndex; f++) {
@@ -592,7 +711,7 @@
                 
                 let isFriday = dayIndex === 6;
                 let isHoliday = !!config.customizedHolidays[dateStr];
-                let isToday = (currentMonthIdx === 2 && d === 25);
+                let isToday = (currentMonthIdx === 2 && d === systemTodayDay);
                 
                 let dayData = appStorage[dateStr] || { checked: false, scratched: false };
                 
@@ -616,6 +735,7 @@
         }
 
         function handleRowDoubleTap(row, dateStr) {
+            if (isSystemLocked) return;
             row.classList.toggle('scratched-row');
             let isScratched = row.classList.contains('scratched-row');
             if(!appStorage[dateStr]) appStorage[dateStr] = { checked: false, scratched: false, in:'', out:'', fare:'' };
@@ -635,6 +755,7 @@
             else cardContainer.classList.remove('month-finished');
             
             localStorage.setItem('ruix_shift_v4_1405', JSON.stringify(appStorage));
+            updateCalculations();
         }
 
         function rowCheckedToggle(chk) {
@@ -669,7 +790,7 @@
         }
 
         function updateCalculations() {
-            let totalFare = 0, totalDays = 0, totalOtMinutes = 0;
+            let totalFare = 0, totalDays = 0, totalOtMinutes = 0, currentMonthTotalWorkloadMinutes = 0;
             const m = monthsConfig[currentMonthIdx];
 
             const rows = document.querySelectorAll('#daysList .day-row');
@@ -695,6 +816,9 @@
                         let startMin = ih * 60 + im, endMin = oh * 60 + om;
                         if (endMin < startMin) endMin += 1440; 
                         let totalMinutes = endMin - startMin;
+                        
+                        currentMonthTotalWorkloadMinutes += totalMinutes;
+
                         if (isSpecial) { otMinutes = totalMinutes; } 
                         else { if (totalMinutes > 480) otMinutes = totalMinutes - 480; }
                     }
@@ -720,6 +844,53 @@
             document.getElementById('badgeOt').innerText = `${String(otH).padStart(2,'0')}:${String(Math.round(totalOtMinutes % 60)).padStart(2,'0')}`;
             document.getElementById('badgeFare').innerText = config.lang === 'fa' ? totalFare.toLocaleString('fa-IR') : totalFare.toLocaleString();
             document.getElementById('footerTotalFare').innerText = config.lang === 'fa' ? `${totalFare.toLocaleString('fa-IR')} تومان` : `${totalFare.toLocaleString()} Toman`;
+
+            executeSmartAiPrediction(currentMonthTotalWorkloadMinutes);
+        }
+
+        // موتور محاسباتی تخمین هوشمند زنده (Micro-AI Engine) کلا بدون دخالت کرایه
+        function executeSmartAiPrediction(currentMonthMinutes) {
+            const baseMonthObj = monthsConfig[config.aiBaseMonthIdx || 2];
+            document.getElementById('aiBaseMonthBadge').innerText = config.lang === 'fa' ? `ماه مبنا: ${baseMonthObj.name}` : `Base: ${baseMonthObj.en}`;
+
+            let parsedBaseSalary = parseFloat((config.aiBaseSalary || "44,000,000").replace(/,/g, '')) || 1;
+            let baseHours = parseFloat(config.aiBaseHours) || 1;
+            let valuePerWorkHour = parsedBaseSalary / baseHours;
+
+            let currentHoursWorked = currentMonthMinutes / 60;
+            let calculatedTargetDay = (currentMonthIdx === 2) ? systemTodayDay : 15; // فرضی برای ماه‌های دیگر غیر سینک
+            
+            // تخمین کارکرد کل ساعت نهایی این ماه بر مبنای سرعت روز جاری سیستم
+            let projectedTotalHours = (currentHoursWorked / calculatedTargetDay) * 30;
+            let finalAiSalaryEstimate = projectedTotalHours * valuePerWorkHour;
+
+            if (currentHoursWorked === 0) finalAiSalaryEstimate = 0;
+
+            let progressBarPercentage = Math.min((calculatedTargetDay / 30) * 100, 100);
+            document.getElementById('aiProgressBar').style.width = `${progressBarPercentage}%`;
+
+            if (config.lang === 'fa') {
+                document.getElementById('aiPredictionDisplay').innerText = finalAiSalaryEstimate > 0 ? 
+                    `${Math.round(finalAiSalaryEstimate).toLocaleString('fa-IR')} تومان` : "داده‌ای ثبت نشده";
+                document.getElementById('aiMetricsSummary').innerText = `تا روز ${calculatedTargetDay} ماه، مجموع کارکرد فعلی شما ${currentHoursWorked.toFixed(1)} ساعت است. کارکرد نهایی ته ماه حدود ${Math.round(projectedTotalHours)} ساعت پیش‌بینی می‌شود.`;
+            } else {
+                document.getElementById('aiPredictionDisplay').innerText = finalAiSalaryEstimate > 0 ? 
+                    `${Math.round(finalAiSalaryEstimate).toLocaleString()} Toman` : "No data logged";
+                document.getElementById('aiMetricsSummary').innerText = `Up to day ${calculatedTargetDay}, current workload is ${currentHoursWorked.toFixed(1)} hrs. Final month forecast is approx ${Math.round(projectedTotalHours)} hrs.`;
+            }
+        }
+
+        function triggerManualSave() {
+            const btn = document.getElementById('floatingSaveBtn');
+            btn.classList.add('save-success-effect');
+            
+            localStorage.setItem('ruix_shift_v4_1405', JSON.stringify(appStorage));
+            saveConfig();
+
+            setTimeout(() => {
+                btn.classList.remove('save-success-effect');
+                alert(config.lang === 'fa' ? "تمامی اطلاعات جدول و هوش مصنوعی با موفقیت ذخیره امن شدند." : "All data compiled & saved safely.");
+            }, 500);
         }
 
         function saveDefaultTimes(type) {
@@ -765,7 +936,7 @@
         function resetSystemAll() {
             if(confirm(config.lang === 'fa' ? "تنظیمات ریست شوند؟" : "Reset settings?")) {
                 localStorage.removeItem('ruix_config_v4');
-                config = { lang: 'fa', theme: 'neon', dayOffsets: {}, defIn: '19:00', defOut: '08:00', monthDefTimes: {}, customizedHolidays: { ...defaultHolidays } };
+                config = { lang: 'fa', theme: 'neon', dayOffsets: {}, defIn: '19:00', defOut: '08:00', monthDefTimes: {}, customizedHolidays: { ...defaultHolidays }, autoLockActive: true, autoLockSeconds: 10, aiBaseMonthIdx: 2, aiBaseSalary: "44,000,000", aiBaseHours: 220 };
                 initApp(); toggleSettingsModal();
             }
         }
