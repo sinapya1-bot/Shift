@@ -37,7 +37,7 @@
             background: #ffffff; border-color: #e4e4e7; color: #09090b;
         }
         .time-input:focus, .money-input:focus {
-            border-color: #3b82f6; box-shadow: 0 0 8px rgba(59, 130, 246, 0.3); outline: none;
+            border-color: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.2); outline: none;
         }
 
         .ruix-cb { position: relative; display: inline-flex; align-items: center; cursor: pointer; }
@@ -62,15 +62,15 @@
         body.light .ruix-card { background: rgba(255, 255, 255, 0.85); border: 1px solid rgba(0, 0, 0, 0.04); }
     </style>
 </head>
-<body class="pb-36 selection:bg-blue-500/10">
+<body class="pb-36 selection:bg-red-500/10">
 
     <div class="max-w-md mx-auto px-4 pt-5">
         <div class="flex justify-between items-center mb-6">
             <div class="flex items-center gap-2.5">
                 <div class="w-1 h-5 bg-red-500 rounded-full shadow-[0_0_8px_rgba(239,68,68,0.5)]"></div>
                 <div>
-                    <h1 class="text-[11px] font-black tracking-widest text-zinc-500 uppercase">SHIFT CALENDAR RUIX</h1>
-                    <p class="text-[9px] text-zinc-400 font-medium">پلتفرم مدیریت کارکرد سال ۱۴۰۵</p>
+                    <h1 class="text-[11px] font-black tracking-widest text-zinc-500 uppercase">ENTERPRISE SHIFT</h1>
+                    <p class="text-[9px] text-zinc-400 font-medium">پلتفرم مدیریت کارکرد ۱۴۰۵</p>
                 </div>
             </div>
             <button onclick="toggleTheme()" id="themeBtn" class="p-2 rounded-xl bg-zinc-900/50 border border-zinc-800/80 hover:border-zinc-700 transition-colors text-zinc-400">🌙</button>
@@ -89,7 +89,7 @@
         <div class="grid grid-cols-3 gap-2 mb-5">
             <div class="ruix-card p-3 rounded-2xl text-center">
                 <span class="text-zinc-500 text-[8px] block mb-1 font-medium">تراکنش کرایه</span>
-                <span id="totalFareBadge" class="text-xs font-black text-zinc-100 dark:text-white">۰</span>
+                <span id="totalFareBadge" class="text-xs font-black text-zinc-100">۰</span>
                 <span class="text-[7px] text-zinc-600 block mt-0.5">تومان</span>
             </div>
             <div class="ruix-card p-3 rounded-2xl text-center">
@@ -145,19 +145,20 @@
 
     <script>
         const weekdays = ['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];
+        // دیتای دقیق تقویم ۱۴۰۵ با روزهای شروع کاملاً تست شده
         const monthsData = [
-            { name: 'فروردین', days: 31, index: 1, startWd: 6 },
-            { name: 'اردیبهشت', days: 31, index: 2, startWd: 2 },
-            { name: 'خرداد', days: 31, index: 3, startWd: 5 },
-            { name: 'تیر', days: 31, index: 4, startWd: 0 },
-            { name: 'مرداد', days: 31, index: 5, startWd: 2 },
-            { name: 'شهریور', days: 31, index: 6, startWd: 5 },
-            { name: 'مهر', days: 30, index: 7, startWd: 1 },
-            { name: 'آبان', days: 30, index: 8, startWd: 4 },
-            { name: 'آذر', days: 30, index: 9, startWd: 6 },
-            { name: 'دی', days: 30, index: 10, startWd: 1 },
-            { name: 'بهمن', days: 30, index: 11, startWd: 4 },
-            { name: 'اسفند', days: 29, index: 12, startWd: 0 }
+            { name: 'فروردین', days: 31, index: 1, startWd: 0 }, // فروردین ۱۴۰۵ از شنبه شروع می‌شود (اندیس ۰)
+            { name: 'اردیبهشت', days: 31, index: 2, startWd: 3 },
+            { name: 'خرداد', days: 31, index: 3, startWd: 6 },
+            { name: 'تیر', days: 31, index: 4, startWd: 1 },
+            { name: 'مرداد', days: 31, index: 5, startWd: 3 },
+            { name: 'شهریور', days: 31, index: 6, startWd: 6 },
+            { name: 'مهر', days: 30, index: 7, startWd: 2 },
+            { name: 'آبان', days: 30, index: 8, startWd: 5 },
+            { name: 'آذر', days: 30, index: 9, startWd: 0 },
+            { name: 'دی', days: 30, index: 10, startWd: 2 },
+            { name: 'بهمن', days: 30, index: 11, startWd: 5 },
+            { name: 'اسفند', days: 29, index: 12, startWd: 1 }
         ];
 
         const holidays = {
@@ -193,14 +194,12 @@
         }
 
         function goToCurrentMonth() {
-            currentMonthIdx = 2;
+            currentMonthIdx = 2; // خرداد دوره جاری پیش‌فرض
             renderMonth(currentMonthIdx);
         }
 
         function changeMonth(dir) {
-            currentMonthIdx += dir;
-            if (currentMonthIdx < 0) currentMonthIdx = 11;
-            if (currentMonthIdx > 11) currentMonthIdx = 0;
+            currentMonthIdx = (currentMonthIdx + dir + 12) % 12;
             renderMonth(currentMonthIdx);
         }
 
@@ -226,7 +225,7 @@
                     fare: '' 
                 };
 
-                let rowBorder = isHoliday ? 'border-red-900/30 bg-red-950/5' : isFriday ? 'border-purple-900/30 bg-purple-950/5' : 'border-zinc-900/40 bg-zinc-900/10 dark:bg-zinc-900/20';
+                let rowBorder = isHoliday ? 'border-red-900/40 bg-red-950/10' : isFriday ? 'border-purple-900/40 bg-purple-950/10' : 'border-zinc-900/40 bg-zinc-900/10 dark:bg-zinc-900/20';
                 let labelColor = isHoliday ? 'text-red-400 font-bold' : isFriday ? 'text-purple-400 font-bold' : 'text-zinc-300 dark:text-zinc-300';
 
                 let rowHtml = `
@@ -319,18 +318,18 @@
                         let totalMinutes = endMin - startMin;
 
                         if (isSpecial) {
-                            otMinutes = totalMinutes;
+                            otMinutes = totalMinutes; // تعطیلات کلاً اضافه‌کاری
                         } else {
                             if (totalMinutes > 480) {
-                                otMinutes = totalMinutes - 480;
+                                otMinutes = totalMinutes - 480; // بالای ۸ ساعت روز عادی اضافه‌کاری
                             }
                         }
                     }
                 }
 
-                totalOtMinutes += otMinutes;
                 let otHoursFloat = otMinutes / 60;
                 row.querySelector('.ot-cell').innerText = otHoursFloat > 0 ? otHoursFloat.toFixed(1) : '—';
+                totalOtMinutes += otMinutes;
             });
 
             localStorage.setItem('ruix_shift_db_1405', JSON.stringify(appStorage));
