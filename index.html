@@ -49,7 +49,6 @@
             background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(0, 0, 0, 0.05);
         }
 
-        /* دایره‌های پروگرس چرخشی */
         .circle-progress-wrapper {
             position: relative; width: 70px; height: 70px;
             display: flex; align-items: center; justify-content: center;
@@ -69,7 +68,6 @@
         }
         .flash-today { animation: flashHighlight 1.5s ease-out; scroll-margin-top: 80px; }
 
-        /* استایل دابل کلیک */
         .scratched-row { position: relative; opacity: 0.35 !important; filter: blur(0.7px); }
         .scratched-row::after {
             content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1.5px;
@@ -78,14 +76,12 @@
         body.theme-pastel .scratched-row::after { background-color: rgba(16, 185, 129, 0.8); }
         .scratched-row input, .scratched-row .cb-wrapper { pointer-events: none !important; }
 
-        /* انیمیشن اتمام ماه */
         @keyframes monthCompletedGlow {
             0%, 100% { border-color: rgba(16, 185, 129, 0.15); box-shadow: none; }
             50% { border-color: #10b981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.3); }
         }
         .month-finished { animation: monthCompletedGlow 2s ease-in-out infinite; border-width: 1.5px !important; }
 
-        /* چک‌باکس سفارشی */
         .cb-wrapper { position: relative; display: inline-flex; align-items: center; cursor: pointer; }
         .cb-input { position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 2; }
         .cb-custom {
@@ -101,13 +97,11 @@
         .cb-input:checked + .cb-custom { background: #10b981; border-color: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.4); }
         .cb-input:checked + .cb-custom::after { transform: rotate(45deg) scale(1); }
 
-        /* قفل سیستم و انیمیشن لرزش */
         @keyframes lockPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); color: #ef4444; } }
         .system-locked-active #btnHeaderLock { animation: lockPulse 1s infinite ease-in-out; color: #ef4444; }
         .system-locked-active input, .system-locked-active .cb-input { pointer-events: none !important; opacity: 0.5; }
         .system-locked-active .day-row { opacity: 0.6; }
 
-        /* انیمیشن ذخیره شناور */
         @keyframes saveSuccessAnimation {
             0% { transform: scale(1); }
             50% { transform: scale(1.2) rotate(-10deg); box-shadow: 0 0 20px #10b981; }
@@ -141,25 +135,10 @@
                 <button id="btnHeaderLock" onclick="toggleLockState()" class="p-2 rounded-xl bg-zinc-900/40 border border-zinc-800/60 transition-colors text-zinc-400 text-xs">
                     <span id="lockIconText">🔓</span>
                 </button>
+                <button onclick="openAiModal()" class="p-2 rounded-xl bg-purple-950/30 border border-purple-900/40 hover:border-purple-700 transition-colors text-purple-400 text-sm shadow-md animate-pulse">🧠</button>
                 <button onclick="toggleCalendarViewModal()" class="p-2 rounded-xl bg-zinc-900/40 border border-zinc-800/60 hover:border-zinc-700 transition-colors text-zinc-400 text-sm">📅</button>
                 <button onclick="toggleSettingsModal()" class="p-2 rounded-xl bg-zinc-900/40 border border-zinc-800/60 hover:border-zinc-700 transition-colors text-zinc-400 text-sm">⚙️</button>
             </div>
-        </div>
-
-        <div class="ruix-card rounded-2xl p-3.5 mb-5 border border-purple-500/10 shadow-xl bg-gradient-to-br from-zinc-900/40 to-purple-950/5">
-            <div class="flex justify-between items-center mb-1.5">
-                <div class="flex items-center gap-1.5 text-purple-400 font-bold text-[10px]">
-                    <span>🧠</span>
-                    <span id="lblAiTitle">تخمین لایو هوش مصنوعی (بدون کرایه)</span>
-                </div>
-                <span id="aiBaseMonthBadge" class="text-[8px] px-2 py-0.5 bg-purple-500/10 text-purple-400 rounded-full font-bold">مبنا: ثبت نشده</span>
-            </div>
-            <div id="aiPredictionDisplay" class="text-sm font-black text-zinc-100 mb-2">در حال محاسبه داده‌ها...</div>
-            
-            <div class="w-full bg-zinc-950 h-1.5 rounded-full overflow-hidden border border-zinc-900">
-                <div id="aiProgressBar" class="h-full bg-gradient-to-l from-purple-500 to-indigo-500 rounded-full transition-all duration-500" style="width: 0%"></div>
-            </div>
-            <span id="aiMetricsSummary" class="text-[7.5px] text-zinc-500 block mt-1.5">سرعت کارکرد شما بر مبنای ماه انتخابی تنظیمات ارزیابی می‌شود.</span>
         </div>
 
         <div id="monthCardContainer" class="ruix-card rounded-2xl p-3 mb-5 flex justify-between items-center shadow-lg border border-transparent transition-all duration-300">
@@ -226,6 +205,44 @@
                 </div>
                 <input type="text" id="baseSalaryInput" placeholder="۰" oninput="salaryInputTrigger(this)" class="salary-input w-40 p-2 rounded-xl text-sm font-bold text-emerald-400">
             </div>
+        </div>
+    </div>
+
+    <div id="aiEvaluationModal" class="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md">
+        <div class="ruix-card border border-purple-500/30 rounded-3xl w-full max-w-sm p-5 shadow-2xl bg-gradient-to-br from-zinc-900 via-purple-950/10 to-zinc-950">
+            <div class="flex justify-between items-center mb-4 border-b border-purple-900/40 pb-2">
+                <div class="flex items-center gap-1.5 text-purple-400 font-bold text-xs">
+                    <span>🧠</span>
+                    <span>تخمین هوش مصنوعی (بدون محاسبات کرایه)</span>
+                </div>
+                <button onclick="closeAiModal()" class="text-zinc-500 hover:text-rose-400 text-sm font-bold">✕</button>
+            </div>
+
+            <div class="mb-4 bg-zinc-950/60 p-3 rounded-2xl border border-zinc-900">
+                <span class="text-[9px] text-zinc-400 block mb-1 font-bold">انتخاب ماه مبنا (استخراج مستقیم محاسبات از جدول شما):</span>
+                <select id="cfgAiMonthSelect" onchange="changeAiBaseConfig()" class="time-input w-full p-2 rounded-xl text-xs font-bold">
+                    <option value="2">خرداد</option>
+                    <option value="1">اردیبهشت</option>
+                    <option value="0">فروردین</option>
+                    <option value="3">تیر</option>
+                    <option value="4">مرداد</option>
+                    <option value="5">شهریور</option>
+                </select>
+                <div class="mt-2 text-[8px] text-purple-400/80 leading-relaxed" id="aiBaseMonthSummaryStats">
+                    داده‌های ماه مبنا: در حال بارگذاری...
+                </div>
+            </div>
+
+            <div class="bg-zinc-950 p-4 rounded-2xl border border-purple-500/10 text-center mb-4">
+                <span class="text-[8px] text-zinc-500 block mb-1 font-medium">پیش‌بینی حقوق دریافتی نهایی این ماه</span>
+                <div id="aiPredictionDisplay" class="text-lg font-black text-emerald-400">در حال محاسبه داده‌ها...</div>
+                
+                <div class="w-full bg-zinc-900 h-1.5 rounded-full overflow-hidden border border-zinc-800 mt-3">
+                    <div id="aiProgressBar" class="h-full bg-gradient-to-l from-purple-500 to-emerald-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <p id="aiMetricsSummary" class="text-[9px] text-zinc-400 leading-relaxed bg-zinc-950/30 p-2.5 rounded-xl border border-zinc-900"></p>
         </div>
     </div>
 
@@ -300,29 +317,6 @@
                     <button onclick="adjustTodaySystemDay(-1)" class="w-8 h-8 bg-zinc-950 text-purple-400 rounded-lg font-bold hover:bg-purple-900/20 transition-colors">-۱</button>
                     <span id="sysTodayDayBadge" class="text-xs font-black text-zinc-200">روز ۲۱ ماه</span>
                     <button onclick="adjustTodaySystemDay(1)" class="w-8 h-8 bg-zinc-950 text-purple-400 rounded-lg font-bold hover:bg-purple-900/20 transition-colors">+۱</button>
-                </div>
-            </div>
-
-            <div class="mb-4 bg-zinc-950/30 p-3 rounded-2xl border border-zinc-900">
-                <label class="text-[10px] text-zinc-400 block mb-2 font-bold">تنظیم ساختار ماه مبنا برای الگوریتم هوش مصنوعی</label>
-                <div class="mb-2">
-                    <span class="text-[8px] text-zinc-500 block mb-1">انتخاب ماه مبنا</span>
-                    <select id="cfgAiMonthSelect" onchange="changeAiBaseConfig()" class="time-input w-full p-1.5 rounded-lg text-xs font-bold">
-                        <option value="2">خرداد</option>
-                        <option value="1">اردیبهشت</option>
-                        <option value="0">فروردین</option>
-                        <option value="3">تیر</option>
-                    </select>
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <span class="text-[8px] text-zinc-500 block mb-1">حقوق دریافتی آن ماه</span>
-                        <input type="text" id="cfgAiBaseSalary" value="44,000,000" oninput="moneyInputTriggerAi(this)" class="time-input w-full p-1.5 rounded-lg text-xs font-bold">
-                    </div>
-                    <div>
-                        <span class="text-[8px] text-zinc-500 block mb-1">کل ساعت کارکرد آن ماه</span>
-                        <input type="number" id="cfgAiBaseHours" value="220" oninput="changeAiBaseConfig()" class="time-input w-full p-1.5 rounded-lg text-xs font-bold">
-                    </div>
                 </div>
             </div>
 
@@ -433,7 +427,7 @@
             lang: 'fa', theme: 'neon', dayOffsets: {}, defIn: '19:00', defOut: '08:00',
             monthDefTimes: {}, customizedHolidays: { ...defaultHolidays },
             autoLockActive: true, autoLockSeconds: 10,
-            aiBaseMonthIdx: 2, aiBaseSalary: "44,000,000", aiBaseHours: 220
+            aiBaseMonthIdx: 2
         };
 
         let touchStartX = 0, touchEndX = 0;
@@ -503,7 +497,6 @@
             if (touchEndX > touchStartX + threshold) { config.lang === 'fa' ? changeMonth(-1) : changeMonth(1); }
         }
 
-        // سیستم قفل رایت-لاک هوشمند و دستی
         function initAutoLockListener() {
             const resetTimer = () => {
                 if (isSystemLocked) return;
@@ -572,23 +565,22 @@
             document.getElementById('cfgAutoLockSeconds').value = config.autoLockSeconds;
             document.getElementById('sysTodayDayBadge').innerText = config.lang === 'fa' ? `روز ${systemTodayDay} ماه` : `Day ${systemTodayDay}`;
             document.getElementById('cfgAiMonthSelect').value = config.aiBaseMonthIdx || 2;
-            document.getElementById('cfgAiBaseSalary').value = config.aiBaseSalary || "44,000,000";
-            document.getElementById('cfgAiBaseHours').value = config.aiBaseHours || 220;
         }
 
         function changeAiBaseConfig() {
             config.aiBaseMonthIdx = parseInt(document.getElementById('cfgAiMonthSelect').value);
-            config.aiBaseHours = parseFloat(document.getElementById('cfgAiBaseHours').value) || 1;
             saveConfig();
-            updateCalculations();
+            runLiveAiCalculation();
         }
 
-        function moneyInputTriggerAi(input) {
-            let val = input.value.replace(/[^\d]/g, '');
-            input.value = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-            config.aiBaseSalary = input.value;
-            saveConfig();
-            updateCalculations();
+        function openAiModal() {
+            document.getElementById('aiEvaluationModal').classList.remove('hidden');
+            updateAiUIElements();
+            runLiveAiCalculation();
+        }
+
+        function closeAiModal() {
+            document.getElementById('aiEvaluationModal').classList.add('hidden');
         }
 
         function toggleSettingsModal() {
@@ -789,6 +781,25 @@
             updateCalculations();
         }
 
+        function calculateMonthTotalMinutesFromStorage(targetMonthIdx) {
+            let totalMinutes = 0;
+            const m = monthsConfig[targetMonthIdx];
+            for (let d = 1; d <= m.days; d++) {
+                let dateStr = `1405-${String(targetMonthIdx + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                let rec = appStorage[dateStr];
+                if (rec && rec.checked && !rec.scratched) {
+                    if (rec.in && rec.out && rec.in.includes(':') && rec.out.includes(':')) {
+                        let [ih, im] = rec.in.split(':').map(Number);
+                        let [oh, om] = rec.out.split(':').map(Number);
+                        let startMin = ih * 60 + im, endMin = oh * 60 + om;
+                        if (endMin < startMin) endMin += 1440;
+                        totalMinutes += (endMin - startMin);
+                    }
+                }
+            }
+            return totalMinutes;
+        }
+
         function updateCalculations() {
             let totalFare = 0, totalDays = 0, totalOtMinutes = 0, currentMonthTotalWorkloadMinutes = 0;
             const m = monthsConfig[currentMonthIdx];
@@ -845,38 +856,69 @@
             document.getElementById('badgeFare').innerText = config.lang === 'fa' ? totalFare.toLocaleString('fa-IR') : totalFare.toLocaleString();
             document.getElementById('footerTotalFare').innerText = config.lang === 'fa' ? `${totalFare.toLocaleString('fa-IR')} تومان` : `${totalFare.toLocaleString()} Toman`;
 
-            executeSmartAiPrediction(currentMonthTotalWorkloadMinutes);
+            if(!document.getElementById('aiEvaluationModal').classList.contains('hidden')) {
+                runLiveAiCalculation();
+            }
         }
 
-        // موتور محاسباتی تخمین هوشمند زنده (Micro-AI Engine) کلا بدون دخالت کرایه
-        function executeSmartAiPrediction(currentMonthMinutes) {
-            const baseMonthObj = monthsConfig[config.aiBaseMonthIdx || 2];
-            document.getElementById('aiBaseMonthBadge').innerText = config.lang === 'fa' ? `ماه مبنا: ${baseMonthObj.name}` : `Base: ${baseMonthObj.en}`;
+        // سیستم محاسباتی اصلاح شده و استخراج مستقیم از جدول انتخابی کاربر
+        function runLiveAiCalculation() {
+            let baseMonthIdx = config.aiBaseMonthIdx || 2;
+            const baseMonthObj = monthsConfig[baseMonthIdx];
 
-            let parsedBaseSalary = parseFloat((config.aiBaseSalary || "44,000,000").replace(/,/g, '')) || 1;
-            let baseHours = parseFloat(config.aiBaseHours) || 1;
+            // ۱. خواندن اطلاعات واقعی از حافظه ماه مبنای جدول
+            let baseSalaryStr = appStorage[`salary_1405_${baseMonthIdx}`] || '0';
+            let parsedBaseSalary = parseFloat(baseSalaryStr.replace(/,/g, '')) || 0;
+            let baseMonthTotalMinutes = calculateMonthTotalMinutesFromStorage(baseMonthIdx);
+            let baseHours = baseMonthTotalMinutes / 60;
+
+            const statsBadge = document.getElementById('aiBaseMonthSummaryStats');
+            if (parsedBaseSalary === 0 || baseHours === 0) {
+                statsBadge.innerHTML = config.lang === 'fa' ? 
+                    `⚠️ خطای مبنا: در جدول ماه ${baseMonthObj.name}، حقوق دریافتی یا ساعت کارکرد ثبت نشده است. ابتدا اطلاعات جدول آن ماه را تکمیل کنید.` :
+                    `⚠️ Base Error: No total net salary or hours logged in ${baseMonthObj.en} table.`;
+                
+                document.getElementById('aiPredictionDisplay').innerText = "—";
+                document.getElementById('aiMetricsSummary').innerText = "محاسبه ناموفق بود.";
+                document.getElementById('aiProgressBar').style.width = '0%';
+                return;
+            }
+
+            statsBadge.innerHTML = config.lang === 'fa' ?
+                `✓ دریافتی استخراج‌شده: ${parsedBaseSalary.toLocaleString('fa-IR')} تومان | مجموع کارکرد: ${baseHours.toFixed(1)} ساعت` :
+                `✓ Loaded Base: ${parsedBaseSalary.toLocaleString()} Toman | Workload: ${baseHours.toFixed(1)} hrs`;
+
+            // ۲. تعیین نرخ ارزش خالص هر ساعت کارکرد
             let valuePerWorkHour = parsedBaseSalary / baseHours;
 
+            // ۳. محاسبه وضعیت کارکرد ماه جاری
+            let currentMonthMinutes = calculateMonthTotalMinutesFromStorage(currentMonthIdx);
             let currentHoursWorked = currentMonthMinutes / 60;
-            let calculatedTargetDay = (currentMonthIdx === 2) ? systemTodayDay : 15; // فرضی برای ماه‌های دیگر غیر سینک
             
-            // تخمین کارکرد کل ساعت نهایی این ماه بر مبنای سرعت روز جاری سیستم
-            let projectedTotalHours = (currentHoursWorked / calculatedTargetDay) * 30;
+            // پیدا کردن روز پیشروی محاسبات (اگر ماه انتخابی همان ماه جاری سیستم باشد از روز واقعی استفاده می‌کند)
+            let calculatedTargetDay = (currentMonthIdx === 2) ? systemTodayDay : monthsConfig[currentMonthIdx].days; 
+            if(calculatedTargetDay <= 0) calculatedTargetDay = 1;
+
+            // ۴. تخمین زدن منطقی کل ساعت ته ماه بر مبنای سرعت پیشروی روزها
+            let projectedTotalHours = (currentHoursWorked / calculatedTargetDay) * monthsConfig[currentMonthIdx].days;
             let finalAiSalaryEstimate = projectedTotalHours * valuePerWorkHour;
 
-            if (currentHoursWorked === 0) finalAiSalaryEstimate = 0;
+            if (currentHoursWorked === 0) {
+                finalAiSalaryEstimate = 0;
+                projectedTotalHours = 0;
+            }
 
-            let progressBarPercentage = Math.min((calculatedTargetDay / 30) * 100, 100);
+            let progressBarPercentage = Math.min((calculatedTargetDay / monthsConfig[currentMonthIdx].days) * 100, 100);
             document.getElementById('aiProgressBar').style.width = `${progressBarPercentage}%`;
 
             if (config.lang === 'fa') {
                 document.getElementById('aiPredictionDisplay').innerText = finalAiSalaryEstimate > 0 ? 
                     `${Math.round(finalAiSalaryEstimate).toLocaleString('fa-IR')} تومان` : "داده‌ای ثبت نشده";
-                document.getElementById('aiMetricsSummary').innerText = `تا روز ${calculatedTargetDay} ماه، مجموع کارکرد فعلی شما ${currentHoursWorked.toFixed(1)} ساعت است. کارکرد نهایی ته ماه حدود ${Math.round(projectedTotalHours)} ساعت پیش‌بینی می‌شود.`;
+                document.getElementById('aiMetricsSummary').innerText = `تا روز ${calculatedTargetDay} این ماه، مجموع کارکرد شما ${currentHoursWorked.toFixed(1)} ساعت است. ارزش برآوردی کل کارکرد نهایی ته ماه بر اساس نرخ ساعتیِ ماه ${baseMonthObj.name}، حدود ${Math.round(projectedTotalHours).toLocaleString('fa-IR')} ساعت معادل مبلغ فوق پیش‌بینی می‌شود.`;
             } else {
                 document.getElementById('aiPredictionDisplay').innerText = finalAiSalaryEstimate > 0 ? 
                     `${Math.round(finalAiSalaryEstimate).toLocaleString()} Toman` : "No data logged";
-                document.getElementById('aiMetricsSummary').innerText = `Up to day ${calculatedTargetDay}, current workload is ${currentHoursWorked.toFixed(1)} hrs. Final month forecast is approx ${Math.round(projectedTotalHours)} hrs.`;
+                document.getElementById('aiMetricsSummary').innerText = `Up to day ${calculatedTargetDay}, logged workload is ${currentHoursWorked.toFixed(1)} hrs. Final month forecast based on ${baseMonthObj.en} rate is approx ${Math.round(projectedTotalHours)} hrs.`;
             }
         }
 
@@ -936,7 +978,7 @@
         function resetSystemAll() {
             if(confirm(config.lang === 'fa' ? "تنظیمات ریست شوند؟" : "Reset settings?")) {
                 localStorage.removeItem('ruix_config_v4');
-                config = { lang: 'fa', theme: 'neon', dayOffsets: {}, defIn: '19:00', defOut: '08:00', monthDefTimes: {}, customizedHolidays: { ...defaultHolidays }, autoLockActive: true, autoLockSeconds: 10, aiBaseMonthIdx: 2, aiBaseSalary: "44,000,000", aiBaseHours: 220 };
+                config = { lang: 'fa', theme: 'neon', dayOffsets: {}, defIn: '19:00', defOut: '08:00', monthDefTimes: {}, customizedHolidays: { ...defaultHolidays }, autoLockActive: true, autoLockSeconds: 10, aiBaseMonthIdx: 2 };
                 initApp(); toggleSettingsModal();
             }
         }
