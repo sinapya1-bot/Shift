@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ساعت کاری شیفت شب ۱۴۰۵</title>
+    <title>داشبورد مدیریتی شیفت شب</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -13,27 +13,421 @@
         body {
             font-family: 'Vazirmatn', sans-serif;
             -webkit-tap-highlight-color: transparent;
-            transition: background-color 0.3s, color 0.3s;
+            transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        body.dark { background-color: #0d0d12; color: #ffffff; }
-        body.light { background-color: #f4f5f7; color: #1e1e24; }
+        body.dark { background-color: #050508; color: #f3f4f6; }
+        body.light { background-color: #f8fafc; color: #0f172a; }
+        
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #27273a; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e1e2f; border-radius: 10px; }
+        body.light .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; }
+
+        /* چک‌باکس انیمیشنی مینیمال */
+        .cb-wrapper {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .cb-custom {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #2d2d3f;
+            border-radius: 5px;
+            position: relative;
+            transition: all 0.2s ease;
+            background: rgba(17, 24, 39, 0.3);
+        }
+        body.light .cb-custom {
+            border-color: #cbd5e1;
+            background: #ffffff;
+        }
+        .cb-input:checked + .cb-custom {
+            background: #ef4444;
+            border-color: #ef4444;
+            transform: scale(1.05);
+        }
+        .cb-custom::after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 2px;
+            width: 4px;
+            height: 8px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg) scale(0);
+            transition: transform 0.2s ease;
+        }
+        .cb-input:checked + .cb-custom::after {
+            transform: rotate(45deg) scale(1);
+        }
+        
+        /* کارت‌های شیشه‌ای لایه اول */
+        .glass-card {
+            background: rgba(18, 18, 29, 0.6);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.02);
+        }
+        body.light .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+        }
+        
+        /* حذف استایل‌های پیش‌فرض ورودی‌های زمان مرورگر برای زیبایی بیشتر */
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            display: none;
+        }
     </style>
 </head>
-<body class="dark pb-36 selection:bg-red-500/30">
+<body class="dark pb-36 selection:bg-red-500/20">
 
-    <div class="max-w-md mx-auto px-4 pt-4">
-        <div class="flex justify-between items-center mb-4">
-            <div class="flex items-center gap-2">
-                <span class="text-xl">⏱️</span>
+    <div class="max-w-md mx-auto px-4 pt-6">
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 <div>
-                    <h1 class="text-sm font-bold tracking-tight opacity-90">ساعت کاری شیفت شب ۱۴۰۵</h1>
-                    <p class="text-[10px] text-gray-500">Black Edition</p>
+                    <h1 class="text-xs font-black tracking-widest text-gray-400 uppercase">Enterprise Shift</h1>
+                    <p class="text-[10px] text-gray-500 font-medium">پلتفرم مدیریت کارکرد ۱۴۰۵</p>
                 </div>
             </div>
-            <button id="themeToggle" class="p-2 rounded-xl bg-gray-900/50 border border-gray-800 text-base">🌙</button>
+            <button id="themeToggle" class="p-2 rounded-xl bg-gray-900/40 dark:bg-gray-900/60 border border-gray-800/80 hover:border-red-500/50 transition-colors active:scale-95">
+                <svg id="themeIcon" class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M16.243 17.657l.707.707M6.343 6.344l.707-.707A6 6 0 1012 18a6 6 0 000-12z"></path></svg>
+            </button>
         </div>
+
+        <div class="glass-card rounded-2xl p-4 mb-4 flex justify-between items-center shadow-2xl">
+            <button onclick="changeMonth(-1)" class="text-gray-400 hover:text-red-500 p-1 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+            <div class="text-center">
+                <h2 id="monthTitle" class="text-sm font-black text-gray-800 dark:text-gray-200 tracking-wide">فروردین ۱۴۰۵</h2>
+            </div>
+            <button onclick="changeMonth(1)" class="text-gray-400 hover:text-red-500 p-1 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            </button>
+        </div>
+
+        <div class="glass-card rounded-2xl p-4 mb-5 shadow-2xl">
+            <div class="grid grid-cols-3 gap-3 text-center">
+                <div class="bg-gray-900/20 dark:bg-black/30 p-3 rounded-xl border border-gray-800/30">
+                    <span class="text-gray-400 dark:text-gray-500 text-[9px] block mb-1 font-medium">تراکنش کرایه</span>
+                    <span id="totalFareBadge" class="text-xs font-black text-slate-800 dark:text-white">۰</span>
+                    <span class="text-[8px] text-gray-500 block mt-0.5">تومان</span>
+                </div>
+                <div class="bg-gray-900/20 dark:bg-black/30 p-3 rounded-xl border border-gray-800/30">
+                    <span class="text-gray-400 dark:text-gray-500 text-[9px] block mb-1 font-medium">کل اضافه کاری</span>
+                    <span id="totalOtBadge" class="text-xs font-black text-red-500">۰۰:۰۰</span>
+                    <span class="text-[8px] text-gray-500 block mt-0.5">ساعت</span>
+                </div>
+                <div class="bg-gray-900/20 dark:bg-black/30 p-3 rounded-xl border border-gray-800/30">
+                    <span class="text-gray-400 dark:text-gray-500 text-[9px] block mb-1 font-medium">تسویه کارکرد</span>
+                    <span id="totalDaysBadge" class="text-xs font-black text-emerald-500">۰</span>
+                    <span class="text-[8px] text-gray-500 block mt-0.5">روز</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-12 gap-1 text-center text-[9px] text-gray-500 font-bold mb-2.5 px-3 tracking-wider">
+            <div class="col-span-1 text-right">وضعیت</div>
+            <div class="col-span-3 text-right pr-2">توالی تقویم</div>
+            <div class="col-span-2">ورود</div>
+            <div class="col-span-2">خروج</div>
+            <div class="col-span-1">اضافه</div>
+            <div class="col-span-3 text-left pl-2">کرایه (تومان)</div>
+        </div>
+
+        <div id="daysList" class="space-y-1.5 max-h-[40vh] overflow-y-auto custom-scrollbar pr-0.5">
+            </div>
+
+        <div class="glass-card rounded-2xl p-4 mt-5 shadow-2xl">
+            <div class="h-24 w-full">
+                <canvas id="analyticsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#050508f0] dark:bg-[#050508f0] backdrop-blur-xl border-t border-gray-900/40 shadow-2xl z-50">
+        <div class="flex justify-between items-center p-3.5 border-b border-gray-900/20">
+            <button onclick="exportToExcel()" class="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 active:scale-95 transition-all text-white font-bold text-[10px] py-2 px-4 rounded-xl flex items-center gap-2 shadow-lg shadow-red-900/20">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                خروجی اکسل
+            </button>
+            <div class="text-left">
+                <span class="text-gray-400 dark:text-gray-500 text-[8px] block uppercase tracking-wider">Total Valuation:</span>
+                <span id="footerTotalFare" class="text-sm font-black text-slate-800 dark:text-white">۰ تومان</span>
+            </div>
+        </div>
+        <div class="grid grid-cols-3 text-center py-2 text-gray-400 text-[9px] font-bold tracking-wide">
+            <button onclick="changeMonth(-1)" class="flex flex-col items-center gap-1 hover:text-red-500 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
+                <span>ماه پیشین</span>
+            </button>
+            <button onclick="goToCurrentMonth()" class="flex flex-col items-center gap-1 text-red-500 hover:opacity-80">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                <span>دوره جاری</span>
+            </button>
+            <button onclick="changeMonth(1)" class="flex flex-col items-center gap-1 hover:text-red-500 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7M19 19l-7-7 7-7"></path></svg>
+                <span>ماه پسین</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const weekdays = ['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];
+        const monthsData = [
+            { name: 'فروردین', days: 31, index: 1, startWd: 6 },
+            { name: 'اردیبهشت', days: 31, index: 2, startWd: 2 },
+            { name: 'خرداد', days: 31, index: 3, startWd: 5 },
+            { name: 'تیر', days: 31, index: 4, startWd: 0 },
+            { name: 'مرداد', days: 31, index: 5, startWd: 2 },
+            { name: 'شهریور', days: 31, index: 6, startWd: 5 },
+            { name: 'مهر', days: 30, index: 7, startWd: 1 },
+            { name: 'آبان', days: 30, index: 8, startWd: 4 },
+            { name: 'آذر', days: 30, index: 9, startWd: 6 },
+            { name: 'دی', days: 30, index: 10, startWd: 1 },
+            { name: 'بهمن', days: 30, index: 11, startWd: 4 },
+            { name: 'اسفند', days: 29, index: 12, startWd: 0 }
+        ];
+
+        const holidays = {
+            "1405-01-01":"نوروز","1405-01-02":"نوروز","1405-01-03":"نوروز","1405-01-04":"نوروز","1405-01-12":"جمهوری اسلامی","1405-01-13":"سیزده بدر",
+            "1405-03-06":"عید قربان","1405-03-14":"رحلت امام","1405-03-15":"۱۵ خرداد","1405-04-03":"تاسوعا","1405-04-04":"عاشورا",
+            "1405-05-13":"اربعین","1405-05-21":"رحلت پیامبر","1405-05-22":"شهادت امام رضا","1405-05-30":"امام عسکری",
+            "1405-06-08":"میلاد پیامبر","1405-10-02":"ولادت امام علی","1405-10-16":"مبعث","1405-11-05":"نیمه شعبان","1405-11-22":"۲۲ بهمن"
+        };
+
+        let currentMonthIdx = 0;
+        let chartInstance = null;
+        let appStorage = JSON.parse(localStorage.getItem('corp_shift_db_1405')) || {};
+
+        function initApp() {
+            let savedTheme = localStorage.getItem('corp_theme') || 'dark';
+            setTheme(savedTheme);
+            renderMonth(currentMonthIdx);
+            initChart();
+            updateCalculations();
+        }
+
+        function setTheme(theme) {
+            const icon = document.getElementById('themeIcon');
+            if (theme === 'dark') {
+                document.body.className = 'dark';
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M16.243 17.657l.707.707M6.343 6.344l.707-.707A6 6 0 1012 18a6 6 0 000-12z"></path>';
+            } else {
+                document.body.className = 'light';
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>';
+            }
+            localStorage.setItem('corp_theme', theme);
+        }
+
+        document.getElementById('themeToggle').onclick = () => {
+            let isDark = document.body.classList.contains('dark');
+            setTheme(isDark ? 'light' : 'dark');
+            if(chartInstance) {
+                chartInstance.options.scales.y.grid.color = isDark ? 'rgba(0,0,0,0.04)' : '#1e1e2f';
+                chartInstance.update();
+            }
+        };
+
+        function goToCurrentMonth() {
+            currentMonthIdx = 0;
+            renderMonth(currentMonthIdx);
+        }
+
+        function changeMonth(dir) {
+            currentMonthIdx += dir;
+            if (currentMonthIdx < 0) currentMonthIdx = 11;
+            if (currentMonthIdx > 11) currentMonthIdx = 0;
+            renderMonth(currentMonthIdx);
+        }
+
+        function renderMonth(idx) {
+            const m = monthsData[idx];
+            document.getElementById('monthTitle').innerText = `${m.name} ۱۴۰۵`;
+            const listContainer = document.getElementById('daysList');
+            listContainer.innerHTML = '';
+            
+            let wd = m.startWd;
+
+            for (let d = 1; d <= m.days; d++) {
+                let dateStr = `1405-${String(m.index).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                let dayName = weekdays[wd];
+                let isFriday = (wd === 6);
+                let isHoliday = !!holidays[dateStr];
+                let isSpecialDay = isFriday || isHoliday;
+                
+                let dayData = appStorage[dateStr] || {
+                    checked: false, 
+                    in: isSpecialDay ? '' : '19:00', 
+                    out: isSpecialDay ? '' : '08:00', 
+                    fare: '' 
+                };
+
+                let rowBg = isHoliday ? 'bg-red-950/10 border-red-900/20' : isFriday ? 'bg-purple-950/10 border-purple-900/20' : 'bg-gray-900/20 dark:bg-gray-900/20 border-gray-800/20';
+                let labelColor = isHoliday ? 'text-red-400 font-bold' : isFriday ? 'text-purple-400' : 'text-gray-400 dark:text-gray-300';
+
+                let rowHtml = `
+                    <div class="grid grid-cols-12 gap-1 items-center p-2 rounded-xl text-center text-xs border ${rowBg} day-row transition-all duration-200" data-date="${dateStr}" data-holiday="${isSpecialDay}">
+                        <div class="col-span-1 text-right flex items-center justify-start">
+                            <label class="cb-wrapper">
+                                <input type="checkbox" ${dayData.checked ? 'checked' : ''} onchange="rowCheckedToggle(this)" class="cb-input hidden">
+                                <span class="cb-custom"></span>
+                            </label>
+                        </div>
+                        <div class="col-span-3 text-right pr-1 leading-tight">
+                            <span class="text-[10px] block font-bold ${labelColor}">${d} ${m.name}</span>
+                            <span class="text-[8px] text-gray-500 block">${dayName} ${isHoliday ? '• ' + holidays[dateStr] : ''}</span>
+                        </div>
+                        <div class="col-span-2"><input type="time" value="${dayData.in}" oninput="updateCalculations()" class="in w-full bg-slate-100 dark:bg-[#11111a] text-slate-900 dark:text-white p-1 rounded-md border border-gray-300 dark:border-gray-800/80 text-center text-[10px] focus:border-red-500/50 focus:outline-none transition-colors"></div>
+                        <div class="col-span-2"><input type="time" value="${dayData.out}" oninput="updateCalculations()" class="out w-full bg-slate-100 dark:bg-[#11111a] text-slate-900 dark:text-white p-1 rounded-md border border-gray-300 dark:border-gray-800/80 text-center text-[10px] focus:border-red-500/50 focus:outline-none transition-colors"></div>
+                        <div class="col-span-1 text-red-500 font-black text-[10px] ot-cell">—</div>
+                        <div class="col-span-3"><input type="text" value="${dayData.fare}" placeholder="-" oninput="moneyInputTrigger(this)" class="money w-full bg-slate-100 dark:bg-[#11111a] text-slate-900 dark:text-white font-bold p-1 rounded-md border border-gray-300 dark:border-gray-800/80 text-left px-1.5 text-[10px] focus:border-red-500/50 focus:outline-none transition-colors"></div>
+                    </div>
+                `;
+                listContainer.insertAdjacentHTML('beforeend', rowHtml);
+                wd = (wd + 1) % 7;
+            }
+            updateCalculations();
+        }
+
+        function rowCheckedToggle(chk) {
+            let row = chk.closest('[data-date]');
+            let isSpecial = row.getAttribute('data-holiday') === 'true';
+            if (chk.checked && isSpecial) {
+                row.querySelector('.in').value = '19:00';
+                row.querySelector('.out').value = '08:00';
+            }
+            updateCalculations();
+        }
+
+        function moneyInputTrigger(input) {
+            let val = input.value.replace(/[^\d]/g, '');
+            input.value = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            
+            let row = input.closest('[data-date]');
+            let chk = row.querySelector('.cb-input');
+            if (input.value !== '' && !chk.checked) {
+                chk.checked = true;
+                rowCheckedToggle(chk);
+                return;
+            }
+            updateCalculations();
+        }
+
+        function updateCalculations() {
+            let totalFare = 0, totalDays = 0, totalOtMinutes = 0;
+            let dailyOtHours = [];
+            let dailyLabels = [];
+
+            const rows = document.querySelectorAll('#daysList .day-row');
+            rows.forEach((row, i) => {
+                let dateStr = row.getAttribute('data-date');
+                let chk = row.querySelector('.cb-input').checked;
+                let inVal = row.querySelector('.in').value;
+                let outVal = row.querySelector('.out').value;
+                let fareString = row.querySelector('.money').value;
+                let fareVal = parseInt(fareString.replace(/,/g, '')) || 0;
+                let isSpecial = row.getAttribute('data-holiday') === 'true';
+
+                appStorage[dateStr] = { checked: chk, in: inVal, out: outVal, fare: fareString };
+
+                let otHours = 0;
+
+                // محاسبه فقط در صورت تیک خوردن روز
+                if (chk) {
+                    totalDays++;
+                    totalFare += fareVal;
+
+                    if (inVal && outVal) {
+                        let [ih, im] = inVal.split(':').map(Number);
+                        let [oh, om] = outVal.split(':').map(Number);
+                        let startMin = ih * 60 + im;
+                        let endMin = oh * 60 + om;
+                        if (endMin < startMin) endMin += 1440;
+                        let totalMinutes = endMin - startMin;
+
+                        if (isSpecial) {
+                            otHours = totalMinutes / 60;
+                        } else {
+                            if (endMin > 1080) {
+                                let otStart = Math.max(startMin, 1080);
+                                let otEnd = Math.min(endMin, 1200);
+                                if (otEnd > otStart) otHours = (otEnd - otStart) / 60;
+                            }
+                        }
+                    }
+                }
+
+                totalOtMinutes += otHours * 60;
+                row.querySelector('.ot-cell').innerText = otHours > 0 ? otHours.toFixed(1) : '—';
+                
+                dailyOtHours.push(otHours);
+                dailyLabels.push(i + 1);
+            });
+
+            localStorage.setItem('corp_shift_db_1405', JSON.stringify(appStorage));
+
+            let otH = Math.floor(totalOtMinutes / 60);
+            let otM = Math.round(totalOtMinutes % 60);
+            
+            document.getElementById('totalFareBadge').innerText = totalFare.toLocaleString('fa-IR');
+            document.getElementById('footerTotalFare').innerText = `${totalFare.toLocaleString('fa-IR')} تومان`;
+            document.getElementById('totalOtBadge').innerText = `${String(otH).padStart(2,'0')}:${String(otM).padStart(2,'0')}`;
+            document.getElementById('totalDaysBadge').innerText = totalDays.toLocaleString('fa-IR');
+
+            if (chartInstance) {
+                chartInstance.data.labels = dailyLabels;
+                chartInstance.data.datasets[0].data = dailyOtHours;
+                chartInstance.update();
+            }
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('analyticsChart').getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: 'rgba(239, 68, 68, 0.75)',
+                        hoverBackgroundColor: '#ef4444',
+                        borderRadius: 3,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#6b7280', font: { size: 7 } } },
+                        y: { grid: { color: '#1e1e2f' }, ticks: { color: '#6b7280', font: { size: 7 } } }
+                    }
+                }
+            });
+        }
+
+        function exportToExcel() {
+            let data = [["تاریخ", "ورود", "خروج", "کرایه دریافتی"]];
+            for (let date in appStorage) {
+                let rec = appStorage[date];
+                if (rec.checked) {
+                    data.push([date, rec.in, rec.out, rec.fare.replace(/,/g, '')]);
+                }
+            }
+            let ws = XLSX.utils.aoa_to_sheet(data);
+            let wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "گزارش نهایی");
+            XLSX.writeFile(wb, `Enterprise_Report_1405.xlsx`);
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
 
         <div class="flex justify-between items-center bg-[#16161f] border border-gray-950/40 rounded-2xl p-3 mb-4 shadow-lg dynamic-card">
             <button onclick="changeMonth(-1)" class="text-gray-400 hover:text-white text-base p-1">▶</button>
