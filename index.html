@@ -14,13 +14,12 @@
             -webkit-tap-highlight-color: transparent;
             background-color: #060608;
             color: #f4f4f5;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s ease;
             overflow-x: hidden;
         }
         
-        /* پالت‌های رنگی تم‌ها */
         body.theme-neon { background-color: #060608; color: #f4f4f5; }
-        body.theme-pastel { background-color: #f0f7f4; color: #2d3748; }
+        body.theme-pastel { background-color: #f4f7f5; color: #1e293b; }
         body.theme-amoled { background-color: #000000; color: #ffffff; }
 
         .custom-scrollbar::-webkit-scrollbar { width: 3px; }
@@ -37,7 +36,7 @@
             transition: all 0.2s ease;
         }
         body.theme-pastel .time-input, body.theme-pastel .money-input, body.theme-pastel .salary-input {
-            background: #ffffff; border-color: #cbd5e1; color: #2d3748;
+            background: #ffffff; border-color: #cbd5e1; color: #1e293b;
         }
         .time-input:focus, .money-input:focus, .salary-input:focus {
             border-color: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.2); outline: none;
@@ -50,48 +49,38 @@
             background: rgba(255, 255, 255, 0.85); border: 1px solid rgba(0, 0, 0, 0.05);
         }
 
-        /* انیمیشن موج آب نئونی داخل دایره‌ها */
-        .wave-container {
-            position: relative; width: 76px; height: 76px; border-radius: 50%;
-            overflow: hidden; border: 2px solid rgba(255,255,255,0.05); background: #0c0c12;
-            display: flex; flex-col: justify-center; align-items: center;
+        /* دایره‌های پروگرس چرخشی نئونی */
+        .circle-progress-wrapper {
+            position: relative; width: 70px; height: 70px;
+            display: flex; align-items: center; justify-content: center;
         }
-        body.theme-pastel .wave-container { background: #ffffff; border-color: rgba(0,0,0,0.05); }
+        .circle-svg-bg { fill: none; stroke: rgba(255, 255, 255, 0.03); stroke-width: 3.5; }
+        body.theme-pastel .circle-svg-bg { stroke: rgba(0, 0, 0, 0.04); }
         
-        .wave-fluid {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 0%;
-            transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1;
+        .circle-svg-bar {
+            fill: none; stroke-width: 4; stroke-linecap: round;
+            transform: rotate(-90deg); transform-origin: 50% 50%;
+            transition: stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .wave-fluid::after {
-            content: ""; position: absolute; width: 200%; height: 200%;
-            top: -10px; left: -50%; background: rgba(255,255,255,0.15);
-            border-radius: 38%; animation: spinWave 4s linear infinite;
-        }
-        @keyframes spinWave { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* انیمیشن فلاش ردیف امروز */
         @keyframes flashHighlight {
             0%, 100% { background-color: transparent; }
             50% { background-color: rgba(239, 68, 68, 0.25); border-color: #ef4444; }
         }
         .flash-today { animation: flashHighlight 1.5s ease-out; scroll-margin-top: 80px; }
 
-        /* خط‌خطی هنری دست‌نویس با دابل کلیک */
-        .scratched-row { position: relative; }
-        .scratched-row::after {
-            content: ""; position: absolute; left: 5%; right: 5%; top: 50%; height: 8px;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='10' viewBox='0 0 100 10'%3E%3Cpath d='M0,5 Q10,0 20,8 T40,2 T60,9 T80,1 T100,5' fill='none' stroke='%23ef4444' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
-            background-size: 60px 100%; background-repeat: repeat-x; transform: translateY(-50%);
-            pointer-events: none; animation: scratchDraw 0.4s ease-out forwards; z-index: 10;
+        /* استایل جدید ردیف حذف شده به جای خط‌خطی */
+        .dimmed-row {
+            opacity: 0.25 !important;
+            filter: blur(0.4px) grayscale(60%);
+            pointer-events: none;
         }
-        @keyframes scratchDraw { from { width: 0; opacity: 0; } to { width: 90%; opacity: 0.75; } }
-        .scratched-row > * { opacity: 0.35; pointer-events: none; }
-        .scratched-row .col-span-1, .scratched-row .col-span-3 { opacity: 1; pointer-events: auto; }
+        .dimmed-row input, .dimmed-row checkbox { pointer-events: none; }
 
         /* انیمیشن اتمام ماه */
         @keyframes monthCompletedGlow {
-            0%, 100% { border-color: rgba(16, 185, 129, 0.2); box-shadow: none; }
-            50% { border-color: #10b981; box-shadow: 0 0 12px rgba(16, 185, 129, 0.4); }
+            0%, 100% { border-color: rgba(16, 185, 129, 0.15); box-shadow: none; }
+            50% { border-color: #10b981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.3); }
         }
         .month-finished { animation: monthCompletedGlow 2s ease-in-out infinite; border-width: 1.5px !important; }
     </style>
@@ -113,10 +102,13 @@
                     <p class="text-[9px] text-zinc-400 font-medium" id="lblSubHeader">پلتفرم مدیریت کارکرد ۱۴۰۵</p>
                 </div>
             </div>
-            <button onclick="toggleSettingsModal()" class="p-2 rounded-xl bg-zinc-900/50 border border-zinc-800/80 hover:border-zinc-700 transition-colors text-zinc-400 text-sm">⚙️</button>
+            <div class="flex gap-2">
+                <button onclick="toggleCalendarViewModal()" class="p-2 rounded-xl bg-zinc-900/50 border border-zinc-800/80 hover:border-zinc-700 transition-colors text-zinc-400 text-sm">📅</button>
+                <button onclick="toggleSettingsModal()" class="p-2 rounded-xl bg-zinc-900/50 border border-zinc-800/80 hover:border-zinc-700 transition-colors text-zinc-400 text-sm">⚙️</button>
+            </div>
         </div>
 
-        <div id="monthCardContainer" class="ruix-card rounded-2xl p-3 mb-4 flex justify-between items-center shadow-lg border border-transparent transition-all duration-300">
+        <div id="monthCardContainer" class="ruix-card rounded-2xl p-3 mb-5 flex justify-between items-center shadow-lg border border-transparent transition-all duration-300">
             <button onclick="changeMonth(-1)" class="text-zinc-500 hover:text-red-500 p-1 transition-colors">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
             </button>
@@ -126,36 +118,36 @@
             </button>
         </div>
 
-        <div class="flex justify-around items-center gap-2 mb-6">
-            <div class="flex flex-col items-center gap-1.5">
-                <div class="wave-container shadow-lg shadow-emerald-950/20">
-                    <div id="waveDays" class="wave-fluid bg-gradient-to-t from-emerald-600 to-emerald-400/80"></div>
-                    <div class="z-10 text-center pointer-events-none">
-                        <span id="badgeDays" class="text-xs font-black text-white block">۰</span>
-                        <span class="text-[7px] text-zinc-400 block" id="lblProgressDays">روز</span>
-                    </div>
+        <div class="grid grid-cols-3 gap-2 mb-6 text-center">
+            <div class="ruix-card py-3 rounded-2xl flex flex-col items-center justify-center gap-1.5 border border-zinc-900/40">
+                <div class="circle-progress-wrapper">
+                    <svg width="64" height="64" viewBox="0 0 64 64">
+                        <circle class="circle-svg-bg" cx="32" cy="32" r="28" />
+                        <circle id="circleDays" class="circle-svg-bar stroke-emerald-400" cx="32" cy="32" r="28" stroke-dasharray="175.9" stroke-dashoffset="175.9" />
+                    </svg>
+                    <span id="badgeDays" class="absolute inset-0 flex items-center justify-center text-xs font-black text-zinc-100">۰</span>
                 </div>
                 <span class="text-[8px] text-zinc-500 font-bold" id="lblTitleDays">تسویه کارکرد</span>
             </div>
 
-            <div class="flex flex-col items-center gap-1.5">
-                <div class="wave-container shadow-lg shadow-red-950/20">
-                    <div id="waveOt" class="wave-fluid bg-gradient-to-t from-red-600 to-red-400/80"></div>
-                    <div class="z-10 text-center pointer-events-none">
-                        <span id="badgeOt" class="text-[10px] font-black text-white block">۰۰:۰۰</span>
-                        <span class="text-[7px] text-zinc-400 block" id="lblProgressOt">ساعت</span>
-                    </div>
+            <div class="ruix-card py-3 rounded-2xl flex flex-col items-center justify-center gap-1.5 border border-zinc-900/40">
+                <div class="circle-progress-wrapper">
+                    <svg width="64" height="64" viewBox="0 0 64 64">
+                        <circle class="circle-svg-bg" cx="32" cy="32" r="28" />
+                        <circle id="circleOt" class="circle-svg-bar stroke-red-500" cx="32" cy="32" r="28" stroke-dasharray="175.9" stroke-dashoffset="175.9" />
+                    </svg>
+                    <span id="badgeOt" class="absolute inset-0 flex items-center justify-center text-[9px] font-black text-zinc-100">۰۰:۰۰</span>
                 </div>
                 <span class="text-[8px] text-zinc-500 font-bold" id="lblTitleOt">اضافه کاری</span>
             </div>
 
-            <div class="flex flex-col items-center gap-1.5">
-                <div class="wave-container shadow-lg shadow-blue-950/20">
-                    <div id="waveFare" class="wave-fluid bg-gradient-to-t from-blue-600 to-blue-400/80"></div>
-                    <div class="z-10 text-center pointer-events-none">
-                        <span id="badgeFare" class="text-[9px] font-black text-white block">۰</span>
-                        <span class="text-[7px] text-zinc-400 block" id="lblProgressFare">تومان</span>
-                    </div>
+            <div class="ruix-card py-3 rounded-2xl flex flex-col items-center justify-center gap-1.5 border border-zinc-900/40">
+                <div class="circle-progress-wrapper">
+                    <svg width="64" height="64" viewBox="0 0 64 64">
+                        <circle class="circle-svg-bg" cx="32" cy="32" r="28" />
+                        <circle id="circleFare" class="circle-svg-bar stroke-blue-400" cx="32" cy="32" r="28" stroke-dasharray="175.9" stroke-dashoffset="175.9" />
+                    </svg>
+                    <span id="badgeFare" class="absolute inset-0 flex items-center justify-center text-[8px] font-black text-zinc-100">۰</span>
                 </div>
                 <span class="text-[8px] text-zinc-500 font-bold" id="lblTitleFare">کل کرایه</span>
             </div>
@@ -179,6 +171,27 @@
                     <label class="text-xs font-bold text-zinc-200" id="lblBaseSalaryInput">حقوق دریافتی این ماه:</label>
                 </div>
                 <input type="text" id="baseSalaryInput" placeholder="۰" oninput="salaryInputTrigger(this)" class="salary-input w-40 p-2 rounded-xl text-sm font-bold text-emerald-400">
+            </div>
+        </div>
+    </div>
+
+    <div id="calendarViewModal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md">
+        <div class="ruix-card border border-zinc-800 rounded-3xl w-full max-w-sm p-5 shadow-2xl">
+            <div class="flex justify-between items-center mb-4 border-b border-zinc-800/60 pb-2">
+                <h3 class="text-xs font-bold text-zinc-200" id="calModalTitle">نمای ماهانه شیفت‌ها</h3>
+                <button onclick="toggleCalendarViewModal()" class="text-zinc-500 text-sm font-bold">✕</button>
+            </div>
+            
+            <div class="grid grid-cols-7 gap-1 text-center text-[9px] text-zinc-500 font-bold mb-2" id="calGridWeekdays">
+                <div>ش</div><div>ی</div><div>د</div><div>س</div><div>چ</div><div>پ</div><div>ج</div>
+            </div>
+
+            <div id="calendarGridCells" class="grid grid-cols-7 gap-2 text-center"></div>
+            
+            <div class="flex justify-center gap-4 mt-5 pt-3 border-t border-zinc-900/60 text-[8px] text-zinc-400 font-bold">
+                <div class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-emerald-500"></div><span>شیفت فعال</span></div>
+                <div class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-red-500"></div><span>تعطیل رسمی</span></div>
+                <div class="flex items-center gap-1"><div class="w-2 h-2 rounded-full border border-red-500"></div><span>امروز</span></div>
             </div>
         </div>
     </div>
@@ -217,7 +230,7 @@
             </div>
 
             <div class="mb-4">
-                <label class="text-[10px] text-zinc-500 block mb-1.5 font-bold" id="cfgLangTitle">زبان پلتفرم (Language)</label>
+                <label class="text-[10px] text-zinc-500 block mb-1.5 font-bold">زبان پلتفرم (Language)</label>
                 <div class="grid grid-cols-2 gap-2">
                     <button onclick="changeLanguage('fa')" id="langFa" class="p-2 text-[10px] font-bold rounded-xl bg-red-500 text-white">فارسی</button>
                     <button onclick="changeLanguage('en')" id="langEn" class="p-2 text-[10px] font-bold rounded-xl bg-zinc-900 text-zinc-400">English</button>
@@ -225,7 +238,7 @@
             </div>
 
             <div class="mb-4">
-                <label class="text-[10px] text-zinc-500 block mb-1.5 font-bold" id="cfgThemeTitle">شخصی‌سازی تم دیداری</label>
+                <label class="text-[10px] text-zinc-500 block mb-1.5 font-bold">شخصی‌سازی تم دیداری</label>
                 <div class="grid grid-cols-3 gap-1.5">
                     <button onclick="setAppTheme('neon')" class="p-1.5 text-[9px] font-bold rounded-lg bg-zinc-900 border border-red-500/30 text-red-400">نئون دارک</button>
                     <button onclick="setAppTheme('pastel')" class="p-1.5 text-[9px] font-bold rounded-lg bg-emerald-100 border border-emerald-300 text-emerald-800">پاستیل سبز</button>
@@ -234,59 +247,57 @@
             </div>
 
             <div class="mb-4 bg-zinc-950/40 p-3 rounded-2xl border border-zinc-900">
-                <label class="text-[10px] text-zinc-400 block mb-2 font-bold" id="cfgDefaultTimesTitle">ساعت‌های ورود و خروج پیش‌فرض</label>
+                <label class="text-[10px] text-zinc-400 block mb-2 font-bold">ساعت‌های ورود و خروج پیش‌فرض</label>
                 <div class="grid grid-cols-2 gap-2 mb-3">
                     <div>
-                        <span class="text-[8px] text-zinc-500 block mb-1" id="cfgInLabel">ورود پیش‌فرض</span>
+                        <span class="text-[8px] text-zinc-500 block mb-1">ورود پیش‌فرض</span>
                         <input type="text" id="defInInput" value="19:00" class="time-input w-full p-1.5 rounded-lg text-xs font-bold">
                     </div>
                     <div>
-                        <span class="text-[8px] text-zinc-500 block mb-1" id="cfgOutLabel">خروج پیش‌فرض</span>
+                        <span class="text-[8px] text-zinc-500 block mb-1">خروج پیش‌فرض</span>
                         <input type="text" id="defOutInput" value="08:00" class="time-input w-full p-1.5 rounded-lg text-xs font-bold">
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
-                    <button onclick="saveDefaultTimes('month')" class="p-1.5 text-[8px] font-black rounded-lg bg-zinc-900 text-zinc-300 border border-zinc-800" id="btnSaveMonth">فقط ماه جاری</button>
-                    <button onclick="saveDefaultTimes('year')" class="p-1.5 text-[8px] font-black rounded-lg bg-zinc-900 text-zinc-300 border border-zinc-800" id="btnSaveYear">کل سال ۱۴۰۵</button>
+                    <button onclick="saveDefaultTimes('month')" class="p-1.5 text-[8px] font-black rounded-lg bg-zinc-900 text-zinc-300 border border-zinc-800">فقط ماه جاری</button>
+                    <button onclick="saveDefaultTimes('year')" class="p-1.5 text-[8px] font-black rounded-lg bg-zinc-900 text-zinc-300 border border-zinc-800">کل سال ۱۴۰۵</button>
                 </div>
             </div>
 
             <div class="mb-4">
-                <label class="text-[10px] text-zinc-500 block mb-1 font-bold" id="cfgOffsetTitle">تنظیم خطای نام روزها (عقب/جلو بردن)</label>
+                <label class="text-[10px] text-zinc-500 block mb-1 font-bold">تنظیم خطای نام روزها (عقب/جلو بردن)</label>
                 <div class="flex items-center justify-between bg-zinc-900/30 p-2 rounded-xl">
-                    <button onclick="adjustDayOffset(-1)" class="w-8 h-8 bg-zinc-900 text-zinc-300 rounded-lg font-bold hover:bg-zinc-800">-۱</button>
+                    <button onclick="adjustDayOffset(-1)" class="w-8 h-8 bg-zinc-900 text-zinc-300 rounded-lg font-bold">-۱</button>
                     <span id="offsetValBadge" class="text-xs font-black text-zinc-200">۰ روز</span>
-                    <button onclick="adjustDayOffset(1)" class="w-8 h-8 bg-zinc-900 text-zinc-300 rounded-lg font-bold hover:bg-zinc-800">+۱</button>
+                    <button onclick="adjustDayOffset(1)" class="w-8 h-8 bg-zinc-900 text-zinc-300 rounded-lg font-bold">+۱</button>
                 </div>
             </div>
 
             <div class="mb-4">
-                <label class="text-[10px] text-zinc-500 block mb-1.5 font-bold" id="cfgHolidaysTitle">مدیریت تعطیلات رسمی ماه جاری</label>
-                <div id="cfgHolidaysList" class="space-y-1 max-h-24 overflow-y-auto custom-scrollbar p-1.5 bg-zinc-950/50 rounded-xl text-[10px]">
-                    </div>
+                <label class="text-[10px] text-zinc-500 block mb-1.5 font-bold">مدیریت تعطیلات رسمی ماه جاری</label>
+                <div id="cfgHolidaysList" class="space-y-1 max-h-24 overflow-y-auto custom-scrollbar p-1.5 bg-zinc-950/50 rounded-xl text-[10px]"></div>
             </div>
 
-            <button onclick="resetSystemAll()" class="w-full mt-2 p-2 rounded-xl bg-red-600/10 hover:bg-red-600/20 text-red-500 text-[10px] font-bold transition-colors" id="btnResetAll">
+            <button onclick="resetSystemAll()" class="w-full mt-2 p-2 rounded-xl bg-red-600/10 hover:bg-red-600/20 text-red-500 text-[10px] font-bold transition-colors">
                 ریست کامل تنظیمات دست‌خورده
             </button>
         </div>
     </div>
 
     <script>
-        // دیتابیس بومی و کاملاً مستقل تقویم ۱۴۰۵ (بدون وابستگی به لوکال تایم ناقص سیستم عامل)
         const monthsConfig = [
-            { name: 'فروردین', en: 'Farvardin', days: 31, startWdIndex: 0 }, // شنبه
-            { name: 'اردیبهشت', en: 'Ordibehesht', days: 31, startWdIndex: 3 }, // سه‌شنبه
-            { name: 'خرداد', en: 'Khordad', days: 31, startWdIndex: 5 }, // پنجشنبه
-            { name: 'تیر', en: 'Tir', days: 31, startWdIndex: 1 }, // یکشنبه
-            { name: 'مرداد', en: 'Mordad', days: 31, startWdIndex: 3 }, // سه‌شنبه
-            { name: 'شهریور', en: 'Shahrivar', days: 31, startWdIndex: 6 }, // جمعه
-            { name: 'مهر', en: 'Mehr', days: 30, startWdIndex: 1 }, // یکشنبه
-            { name: 'آبان', en: 'Aban', days: 30, startWdIndex: 3 }, // سه‌شنبه
-            { name: 'آذر', en: 'Azar', days: 30, startWdIndex: 5 }, // پنجشنبه
-            { name: 'دی', en: 'Dey', days: 30, startWdIndex: 0 }, // شنبه
-            { name: 'بهمن', en: 'Bahman', days: 30, startWdIndex: 2 }, // دوشنبه
-            { name: 'اسفند', en: 'Esfand', days: 29, startWdIndex: 4 } // چهارشنبه
+            { name: 'فروردین', en: 'Farvardin', days: 31, startWdIndex: 0 },
+            { name: 'اردیبهشت', en: 'Ordibehesht', days: 31, startWdIndex: 3 },
+            { name: 'خرداد', en: 'Khordad', days: 31, startWdIndex: 5 },
+            { name: 'تیر', en: 'Tir', days: 31, startWdIndex: 1 },
+            { name: 'مرداد', en: 'Mordad', days: 31, startWdIndex: 3 },
+            { name: 'شهریور', en: 'Shahrivar', days: 31, startWdIndex: 6 },
+            { name: 'مهر', en: 'Mehr', days: 30, startWdIndex: 1 },
+            { name: 'آبان', en: 'Aban', days: 30, startWdIndex: 3 },
+            { name: 'آذر', en: 'Azar', days: 30, startWdIndex: 5 },
+            { name: 'دی', en: 'Dey', days: 30, startWdIndex: 0 },
+            { name: 'بهمن', en: 'Bahman', days: 30, startWdIndex: 2 },
+            { name: 'اسفند', en: 'Esfand', days: 29, startWdIndex: 4 }
         ];
 
         const wdFa = ['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];
@@ -299,29 +310,25 @@
             "1405-06-08": true, "1405-10-02": true, "1405-10-16": true, "1405-11-05": true, "1405-11-22": true
         };
 
-        // متون ترجمه دو زبانه سیستم
         const langPack = {
             fa: {
                 subHeader: "پلتفرم مدیریت کارکرد ۱۴۰۵", titleDays: "تسویه کارکرد", titleOt: "اضافه کاری", titleFare: "کل کرایه",
-                progressDays: "روز", progressOt: "ساعت", progressFare: "تومان", baseSalary: "حقوق دریافتی این ماه:",
-                hdrStatus: "وضعیت", hdrDate: "توالی تقویم", hdrIn: "ورود", hdrOut: "خروج", hdrOt: "اضافه", hdrFare: "کرایه",
-                excel: "خروجی اکسل", totalFareFooter: "جمع کل کرایه:", prevMonth: "ماه قبل", today: "امروز", nextMonth: "ماه بعد",
-                floatingSalary: "حقوق دریافتی", floatingCurrency: "تومان"
+                baseSalary: "حقوق دریافتی این ماه:", excel: "خروجی اکسل", totalFareFooter: "جمع کل کرایه:",
+                prevMonth: "ماه قبل", today: "امروز", nextMonth: "ماه بعد", floatingSalary: "حقوق دریافتی", floatingCurrency: "تومان",
+                calModalTitle: "نمای ماهانه شیفت‌ها"
             },
             en: {
                 subHeader: "Shift Management Platform 1405", titleDays: "Settled Days", titleOt: "Overtime", titleFare: "Total Fare",
-                progressDays: "Days", progressOt: "Hours", progressFare: "Toman", baseSalary: "Monthly Net Income:",
-                hdrStatus: "Status", hdrDate: "Calendar Log", hdrIn: "In", hdrOut: "Out", hdrOt: "OT", hdrFare: "Fare",
-                excel: "Export Excel", totalFareFooter: "Total Fare:", prevMonth: "Prev", today: "Today", nextMonth: "Next",
-                floatingSalary: "Net Salary", floatingCurrency: "Toman"
+                baseSalary: "Monthly Net Income:", excel: "Export Excel", totalFareFooter: "Total Fare:",
+                prevMonth: "Prev", today: "Today", nextMonth: "Next", floatingSalary: "Net Salary", floatingCurrency: "Toman",
+                calModalTitle: "Monthly Shift Matrix"
             }
         };
 
-        let currentMonthIdx = 2; // خرداد پیش‌فرض
-        let appStorage = JSON.parse(localStorage.getItem('ruix_shift_v3_1405')) || {};
-        let config = JSON.parse(localStorage.getItem('ruix_config_v3')) || {
-            lang: 'fa', theme: 'neon', dayOffset: 0, 
-            defIn: '19:00', defOut: '08:00',
+        let currentMonthIdx = 2; 
+        let appStorage = JSON.parse(localStorage.getItem('ruix_shift_v4_1405')) || {};
+        let config = JSON.parse(localStorage.getItem('ruix_config_v4')) || {
+            lang: 'fa', theme: 'neon', dayOffset: 0, defIn: '19:00', defOut: '08:00',
             monthDefTimes: {}, customizedHolidays: { ...defaultHolidays }
         };
 
@@ -345,15 +352,11 @@
             document.documentElement.dir = l === 'fa' ? 'rtl' : 'ltr';
             saveConfig();
 
-            // اعمال لبل‌ها
             const p = langPack[l];
             document.getElementById('lblSubHeader').innerText = p.subHeader;
             document.getElementById('lblTitleDays').innerText = p.titleDays;
             document.getElementById('lblTitleOt').innerText = p.titleOt;
             document.getElementById('lblTitleFare').innerText = p.titleFare;
-            document.getElementById('lblProgressDays').innerText = p.progressDays;
-            document.getElementById('lblProgressOt').innerText = p.progressOt;
-            document.getElementById('lblProgressFare').innerText = p.progressFare;
             document.getElementById('lblBaseSalaryInput').innerText = p.baseSalary;
             document.getElementById('btnExcel').innerText = p.excel;
             document.getElementById('lblTotalFareFooter').innerText = p.totalFareFooter;
@@ -362,45 +365,36 @@
             document.getElementById('btnNextMonth').innerText = p.nextMonth;
             document.getElementById('lblFloatingSalary').innerText = p.floatingSalary;
             document.getElementById('lblFloatingCurrency').innerText = p.floatingCurrency;
+            document.getElementById('calModalTitle').innerText = p.calModalTitle;
 
-            // هدرهای جدول
-            document.getElementById('hdrStatus').innerText = p.hdrStatus;
-            document.getElementById('hdrDate').innerText = p.hdrDate;
-            document.getElementById('hdrIn').innerText = p.hdrIn;
-            document.getElementById('hdrOut').innerText = p.hdrOut;
-            document.getElementById('hdrOt').innerText = p.hdrOt;
-            document.getElementById('hdrFare').innerText = p.hdrFare;
+            document.getElementById('hdrStatus').innerText = l === 'fa' ? "وضعیت" : "Status";
+            document.getElementById('hdrDate').innerText = l === 'fa' ? "توالی تقویم" : "Calendar Log";
+            document.getElementById('hdrIn').innerText = l === 'fa' ? "ورود" : "In";
+            document.getElementById('hdrOut').innerText = l === 'fa' ? "خروج" : "Out";
+            document.getElementById('hdrOt').innerText = l === 'fa' ? "اضافه" : "OT";
+            document.getElementById('hdrFare').innerText = l === 'fa' ? "کرایه" : "Fare";
 
-            // دکمه‌های مۆدال تنظیمات
+            const calWeekdays = document.getElementById('calGridWeekdays');
+            calWeekdays.innerHTML = l === 'fa' ? 
+                '<div>ش</div><div>ی</div><div>د</div><div>س</div><div>چ</div><div>پ</div><div>ج</div>' :
+                '<div>Sa</div><div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div>';
+
             document.getElementById('langFa').className = l === 'fa' ? "p-2 text-[10px] font-bold rounded-xl bg-red-500 text-white" : "p-2 text-[10px] font-bold rounded-xl bg-zinc-900 text-zinc-400";
             document.getElementById('langEn').className = l === 'en' ? "p-2 text-[10px] font-bold rounded-xl bg-red-500 text-white" : "p-2 text-[10px] font-bold rounded-xl bg-zinc-900 text-zinc-400";
 
             renderMonth(currentMonthIdx);
         }
 
-        // سیستم ورق زدن افقی صفحه (Swipe) بدون تداخل با اسکرول عمودی
         function setupSwipeGestures() {
             const zone = document.getElementById('swipeZone');
-            zone.addEventListener('touchstart', e => {
-                touchStartX = e.changedTouches[0].screenX;
-            }, { passive: true });
-
-            zone.addEventListener('touchend', e => {
-                touchEndX = e.changedTouches[0].screenX;
-                handleSwipeDirection();
-            }, { passive: true });
+            zone.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
+            zone.addEventListener('touchend', e => { touchEndX = e.changedTouches[0].screenX; handleSwipeDirection(); }, { passive: true });
         }
 
         function handleSwipeDirection() {
-            const threshold = 75; // حداقل فاصله حرکت دست برای سوایپ
-            if (touchEndX < touchStartX - threshold) {
-                // سوایپ به چپ -> ماه بعد (در زبان فارسی برعکس است)
-                config.lang === 'fa' ? changeMonth(1) : changeMonth(-1);
-            }
-            if (touchEndX > touchStartX + threshold) {
-                // سوایپ به راست -> ماه قبل
-                config.lang === 'fa' ? changeMonth(-1) : changeMonth(1);
-            }
+            const threshold = 75;
+            if (touchEndX < touchStartX - threshold) { config.lang === 'fa' ? changeMonth(1) : changeMonth(-1); }
+            if (touchEndX > touchStartX + threshold) { config.lang === 'fa' ? changeMonth(-1) : changeMonth(1); }
         }
 
         function toggleSettingsModal() {
@@ -409,18 +403,22 @@
             if (!m.classList.contains('hidden')) renderHolidaysManager();
         }
 
+        function toggleCalendarViewModal() {
+            const m = document.getElementById('calendarViewModal');
+            m.classList.toggle('hidden');
+            if (!m.classList.contains('hidden')) buildCalendarGrid();
+        }
+
         function changeMonth(dir) {
             currentMonthIdx = (currentMonthIdx + dir + 12) % 12;
             renderMonth(currentMonthIdx);
         }
 
-        // دکمه امروز کاملاً دقیق و بی‌نقص زنده
         function goToToday() {
-            currentMonthIdx = 2; // فیکس روی خرداد ۱۴۰۵ طبق دیتابیس پروژه کارکرد
+            currentMonthIdx = 2; 
             renderMonth(currentMonthIdx);
-            
             setTimeout(() => {
-                const todayRow = document.getElementById('day-row-25'); // ۲۵ خرداد مفروض پروژه
+                const todayRow = document.getElementById('day-row-25'); 
                 if(todayRow) {
                     todayRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     todayRow.classList.add('flash-today');
@@ -438,25 +436,18 @@
             document.getElementById('baseSalaryInput').value = savedSalary;
             document.getElementById('floatingSalaryWidget').innerText = savedSalary !== '' ? savedSalary : '۰';
 
-            // چک کردن افکت درخشش اتمام ماه با پر شدن باکس حقوق دریافتی
             const cardContainer = document.getElementById('monthCardContainer');
-            if (savedSalary !== '') {
-                cardContainer.classList.add('month-finished');
-            } else {
-                cardContainer.classList.remove('month-finished');
-            }
+            if (savedSalary !== '') cardContainer.classList.add('month-finished');
+            else cardContainer.classList.remove('month-finished');
 
             const listContainer = document.getElementById('daysList');
             listContainer.innerHTML = '';
 
-            // گرفتن پیش‌فرض‌های ساعت این ماه یا کل سال
             let activeDefIn = config.monthDefTimes[`m_${idx}_in`] || config.defIn;
             let activeDefOut = config.monthDefTimes[`m_${idx}_out`] || config.defOut;
 
             for (let d = 1; d <= m.days; d++) {
                 let dateStr = `1405-${String(idx + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                
-                // محاسبه نام روز هفته بر اساس ساختار مستقل + آفست دستی تنظیمی کاربر
                 let dayIndex = (m.startWdIndex + (d - 1) + config.dayOffset + 70) % 7;
                 let dayName = config.lang === 'fa' ? wdFa[dayIndex] : wdEn[dayIndex];
 
@@ -465,10 +456,7 @@
                 let isSpecialDay = isFriday || isHoliday;
                 
                 let dayData = appStorage[dateStr] || {
-                    checked: false, scratched: false,
-                    in: isSpecialDay ? '' : activeDefIn, 
-                    out: isSpecialDay ? '' : activeDefOut, 
-                    fare: '' 
+                    checked: false, scratched: false, in: isSpecialDay ? '' : activeDefIn, out: isSpecialDay ? '' : activeDefOut, fare: '' 
                 };
 
                 let rowBorder = isHoliday ? 'border-red-900/40 bg-red-950/10' : isFriday ? 'border-purple-900/40 bg-purple-950/10' : 'border-zinc-900/40 bg-zinc-900/10 dark:bg-zinc-900/20';
@@ -478,10 +466,10 @@
                 if(isFixedToday) rowBorder += ' border-red-500/50';
 
                 let rowClass = `grid grid-cols-12 gap-1 items-center p-2 rounded-xl text-center text-xs border ${rowBorder} day-row transition-all`;
-                if(dayData.scratched) rowClass += ' scratched-row';
+                if(dayData.scratched) rowClass += ' dimmed-row';
 
                 let rowHtml = `
-                    <div id="day-row-${d}" class="${rowClass}" data-date="${dateStr}" data-holiday="${isSpecialDay}" od-index="${d}" ondblclick="handleRowDoubleTap(this, '${dateStr}')">
+                    <div id="day-row-${d}" class="${rowClass}" data-date="${dateStr}" data-holiday="${isSpecialDay}" ondblclick="handleRowDoubleTap(this, '${dateStr}')">
                         <div class="col-span-1 text-right flex items-center justify-start">
                             <input type="checkbox" ${dayData.checked ? 'checked' : ''} onchange="rowCheckedToggle(this)" class="w-4 h-4 rounded text-red-500 bg-zinc-900 border-zinc-700 focus:ring-0">
                         </div>
@@ -501,51 +489,73 @@
             updateCalculations();
         }
 
-        // مکانیزم دابل کلیک برای خط‌خطی هنری گرافیکی تمیز روی تب‌ها
-        function handleRowDoubleTap(row, dateStr) {
-            row.classList.toggle('scratched-row');
-            let isScratched = row.classList.contains('scratched-row');
+        /* تولید پویای ماتریکس تقویم ماهانه شبیه به عکس‌های ارسالی */
+        function buildCalendarGrid() {
+            const gridContainer = document.getElementById('calendarGridCells');
+            gridContainer.innerHTML = '';
             
+            const m = monthsConfig[currentMonthIdx];
+            
+            // تولید خانه‌های خالی برای تراز شدن شروع اول ماه با نام روز هفته درست
+            for(let f = 0; f < m.startWdIndex; f++) {
+                gridContainer.insertAdjacentHTML('beforeend', `<div class="opacity-0 pointer-events-none p-2"></div>`);
+            }
+
+            for(let d = 1; d <= m.days; d++) {
+                let dateStr = `1405-${String(currentMonthIdx + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                let dayIndex = (m.startWdIndex + (d - 1) + config.dayOffset + 70) % 7;
+                
+                let isFriday = dayIndex === 6;
+                let isHoliday = !!config.customizedHolidays[dateStr];
+                let isToday = (currentMonthIdx === 2 && d === 25);
+                
+                let dayData = appStorage[dateStr] || { checked: false, scratched: false };
+                
+                let bgStyle = 'bg-zinc-900/40 text-zinc-400 border border-zinc-800/60';
+                if(dayData.checked && !dayData.scratched) {
+                    bgStyle = 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-black';
+                } else if(isHoliday || isFriday) {
+                    bgStyle = 'bg-red-500/10 text-red-400 border border-red-500/20 font-bold';
+                }
+
+                if(isToday) bgStyle += ' ring-2 ring-red-500 ring-offset-2 ring-offset-black';
+                if(dayData.scratched) bgStyle += ' opacity-30';
+
+                let cellHtml = `
+                    <div class="p-2 rounded-xl text-xs font-medium flex items-center justify-center aspect-square ${bgStyle}">
+                        ${config.lang === 'fa' ? d.toLocaleString('fa-IR') : d}
+                    </div>
+                `;
+                gridContainer.insertAdjacentHTML('beforeend', cellHtml);
+            }
+        }
+
+        function handleRowDoubleTap(row, dateStr) {
+            row.classList.toggle('dimmed-row');
+            let isScratched = row.classList.contains('dimmed-row');
             if(!appStorage[dateStr]) appStorage[dateStr] = { checked: false, scratched: false, in:'', out:'', fare:'' };
             appStorage[dateStr].scratched = isScratched;
-            
-            // در صورت خط خوردن، تیک چک باکس برداشته شود تا در محاسبات نیاید
-            if(isScratched) {
-                let chk = row.querySelector('input[type="checkbox"]');
-                chk.checked = false;
-            }
+            if(isScratched) { row.querySelector('input[type="checkbox"]').checked = false; }
             updateCalculations();
         }
 
         function salaryInputTrigger(input) {
             let val = input.value.replace(/[^\d]/g, '');
             input.value = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-            
-            const salaryKey = `salary_1405_${currentMonthIdx}`;
-            appStorage[salaryKey] = input.value;
-            
+            appStorage[`salary_1405_${currentMonthIdx}`] = input.value;
             document.getElementById('floatingSalaryWidget').innerText = input.value !== '' ? input.value : '۰';
             
             const cardContainer = document.getElementById('monthCardContainer');
-            if (input.value !== '') {
-                cardContainer.classList.add('month-finished');
-            } else {
-                cardContainer.classList.remove('month-finished');
-            }
+            if (input.value !== '') cardContainer.classList.add('month-finished');
+            else cardContainer.classList.remove('month-finished');
             
-            localStorage.setItem('ruix_shift_v3_1405', JSON.stringify(appStorage));
+            localStorage.setItem('ruix_shift_v4_1405', JSON.stringify(appStorage));
         }
 
         function rowCheckedToggle(chk) {
             let row = chk.closest('[data-date]');
+            if (row.classList.contains('dimmed-row')) { chk.checked = false; return; }
             let isSpecial = row.getAttribute('data-holiday') === 'true';
-            
-            // اگر ردیف خط‌خطی باشد، اجازه چک خوردن ندهد
-            if (row.classList.contains('scratched-row')) {
-                chk.checked = false;
-                return;
-            }
-
             if (chk.checked && isSpecial) {
                 let idx = currentMonthIdx;
                 row.querySelector('.in').value = config.monthDefTimes[`m_${idx}_in`] || config.defIn;
@@ -557,21 +567,17 @@
         function timeInputFormat(input) {
             let val = input.value.replace(/[^\d]/g, '');
             if(val.length > 4) val = val.substring(0,4);
-            if(val.length > 2) {
-                input.value = val.substring(0,2) + ':' + val.substring(2);
-            } else {
-                input.value = val;
-            }
+            if(val.length > 2) { input.value = val.substring(0,2) + ':' + val.substring(2); } 
+            else { input.value = val; }
             updateCalculations();
         }
 
         function moneyInputTrigger(input) {
             let val = input.value.replace(/[^\d]/g, '');
             input.value = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-            
             let row = input.closest('[data-date]');
             let chk = row.querySelector('input[type="checkbox"]');
-            if (input.value !== '' && !chk.checked && !row.classList.contains('scratched-row')) {
+            if (input.value !== '' && !chk.checked && !row.classList.contains('dimmed-row')) {
                 chk.checked = true;
                 rowCheckedToggle(chk);
             }
@@ -586,7 +592,7 @@
             rows.forEach((row) => {
                 let dateStr = row.getAttribute('data-date');
                 let chk = row.querySelector('input[type="checkbox"]').checked;
-                let isScratched = row.classList.contains('scratched-row');
+                let isScratched = row.classList.contains('dimmed-row');
                 let inVal = row.querySelector('.in').value;
                 let outVal = row.querySelector('.out').value;
                 let fareString = row.querySelector('.money').value;
@@ -594,93 +600,67 @@
                 let isSpecial = row.getAttribute('data-holiday') === 'true';
 
                 appStorage[dateStr] = { checked: chk, scratched: isScratched, in: inVal, out: outVal, fare: fareString };
-
                 let otMinutes = 0;
 
                 if (chk && !isScratched) {
                     totalDays++;
                     totalFare += fareVal;
-
                     if (inVal.includes(':') && outVal.includes(':')) {
                         let [ih, im] = inVal.split(':').map(Number);
                         let [oh, om] = outVal.split(':').map(Number);
-                        
-                        let startMin = ih * 60 + im;
-                        let endMin = oh * 60 + om;
+                        let startMin = ih * 60 + im, endMin = oh * 60 + om;
                         if (endMin < startMin) endMin += 1440; 
-                        
                         let totalMinutes = endMin - startMin;
-
-                        if (isSpecial) {
-                            otMinutes = totalMinutes; 
-                        } else {
-                            if (totalMinutes > 480) {
-                                otMinutes = totalMinutes - 480; 
-                            }
-                        }
+                        if (isSpecial) { otMinutes = totalMinutes; } 
+                        else { if (totalMinutes > 480) otMinutes = totalMinutes - 480; }
                     }
                 }
-
                 let otHoursFloat = otMinutes / 60;
                 row.querySelector('.ot-cell').innerText = otHoursFloat > 0 ? otHoursFloat.toFixed(1) : '—';
                 totalOtMinutes += otMinutes;
             });
 
-            localStorage.setItem('ruix_shift_v3_1405', JSON.stringify(appStorage));
-
+            localStorage.setItem('ruix_shift_v4_1405', JSON.stringify(appStorage));
             let otH = Math.floor(totalOtMinutes / 60);
-            
-            // بروزرسانی دایره‌های مایع نئونی بالایی (Liquid Animations)
-            let daysPercent = Math.min((totalDays / m.days) * 100, 100);
-            let otPercent = Math.min((otH / 100) * 100, 100); // فرضا سقف ظرفیت اضافه کار ۱۰۰ ساعت
-            let farePercent = Math.min((totalFare / 3000000) * 100, 100); // سقف فرضی گنجایش کرایه ۳ میلیون
 
-            document.getElementById('waveDays').style.height = `${daysPercent}%`;
-            document.getElementById('waveOt').style.height = `${otPercent}%`;
-            document.getElementById('waveFare').style.height = `${farePercent}%`;
+            let perimeter = 175.9; 
+            let daysOffset = perimeter - (Math.min(totalDays / m.days, 1) * perimeter);
+            let otOffset = perimeter - (Math.min(otH / 80, 1) * perimeter); 
+            let fareOffset = perimeter - (Math.min(totalFare / 2500000, 1) * perimeter); 
+
+            document.getElementById('circleDays').style.strokeDashoffset = daysOffset;
+            document.getElementById('circleOt').style.strokeDashoffset = otOffset;
+            document.getElementById('circleFare').style.strokeDashoffset = fareOffset;
 
             document.getElementById('badgeDays').innerText = config.lang === 'fa' ? totalDays.toLocaleString('fa-IR') : totalDays;
             document.getElementById('badgeOt').innerText = `${String(otH).padStart(2,'0')}:${String(Math.round(totalOtMinutes % 60)).padStart(2,'0')}`;
             document.getElementById('badgeFare').innerText = config.lang === 'fa' ? totalFare.toLocaleString('fa-IR') : totalFare.toLocaleString();
-            
             document.getElementById('footerTotalFare').innerText = config.lang === 'fa' ? `${totalFare.toLocaleString('fa-IR')} تومان` : `${totalFare.toLocaleString()} Toman`;
         }
 
-        // ذخیره تغییرات ساعت‌های پیش‌فرض
         function saveDefaultTimes(type) {
             let inV = document.getElementById('defInInput').value;
             let outV = document.getElementById('defOutInput').value;
-
-            if(type === 'year') {
-                config.defIn = inV; config.defOut = outV;
-                config.monthDefTimes = {}; // پاک کردن کاستوم‌های ماه‌ها
-            } else {
-                config.monthDefTimes[`m_${currentMonthIdx}_in`] = inV;
-                config.monthDefTimes[`m_${currentMonthIdx}_out`] = outV;
-            }
-            saveConfig();
-            renderMonth(currentMonthIdx);
+            if(type === 'year') { config.defIn = inV; config.defOut = outV; config.monthDefTimes = {}; } 
+            else { config.monthDefTimes[`m_${currentMonthIdx}_in`] = inV; config.monthDefTimes[`m_${currentMonthIdx}_out`] = outV; }
+            saveConfig(); renderMonth(currentMonthIdx);
             alert(config.lang === 'fa' ? "ساعت پیش‌فرض با موفقیت ثبت شد." : "Default hours updated.");
         }
 
         function adjustDayOffset(val) {
             config.dayOffset += val;
             document.getElementById('offsetValBadge').innerText = (config.dayOffset > 0 ? '+' : '') + config.dayOffset + (config.lang === 'fa' ? ' روز' : ' Days');
-            saveConfig();
-            renderMonth(currentMonthIdx);
+            saveConfig(); renderMonth(currentMonthIdx);
         }
 
         function renderHolidaysManager() {
             const container = document.getElementById('cfgHolidaysList');
-            container.innerHTML = '';
-            const m = monthsConfig[currentMonthIdx];
-
+            container.innerHTML = ''; const m = monthsConfig[currentMonthIdx];
             for(let d=1; d<=m.days; d++) {
                 let dateStr = `1405-${String(currentMonthIdx + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
                 let isH = !!config.customizedHolidays[dateStr];
-                
                 let item = `
-                    <div class="flex items-center justify-between p-1 border-b border-zinc-900">
+                    <div class="flex items-center justify-between p-1 border-b border-zinc-900/30">
                         <span>${d} ${config.lang === 'fa' ? m.name : m.en}</span>
                         <input type="checkbox" ${isH ? 'checked' : ''} onchange="toggleHolidayDirect('${dateStr}', this.checked)" class="w-3 h-3 text-red-500 bg-zinc-900 border-zinc-700">
                     </div>
@@ -690,52 +670,36 @@
         }
 
         function toggleHolidayDirect(dateStr, isChecked) {
-            if(isChecked) {
-                config.customizedHolidays[dateStr] = true;
-            } else {
-                delete config.customizedHolidays[dateStr];
-            }
-            saveConfig();
-            renderMonth(currentMonthIdx);
+            if(isChecked) config.customizedHolidays[dateStr] = true;
+            else delete config.customizedHolidays[dateStr];
+            saveConfig(); renderMonth(currentMonthIdx);
         }
 
         function resetSystemAll() {
             if(confirm(config.lang === 'fa' ? "آیا مایلید تمام شخصی‌سازی‌ها ریست شوند؟" : "Reset all settings?")) {
-                localStorage.removeItem('ruix_config_v3');
-                config = {
-                    lang: 'fa', theme: 'neon', dayOffset: 0, defIn: '19:00', defOut: '08:00',
-                    monthDefTimes: {}, customizedHolidays: { ...defaultHolidays }
-                };
-                initApp();
-                toggleSettingsModal();
+                localStorage.removeItem('ruix_config_v4');
+                config = { lang: 'fa', theme: 'neon', dayOffset: 0, defIn: '19:00', defOut: '08:00', monthDefTimes: {}, customizedHolidays: { ...defaultHolidays } };
+                initApp(); toggleSettingsModal();
             }
         }
 
-        function saveConfig() { localStorage.setItem('ruix_config_v3', JSON.stringify(config)); }
+        function saveConfig() { localStorage.setItem('ruix_config_v4', JSON.stringify(config)); }
 
         function exportToExcel() {
             const m = monthsConfig[currentMonthIdx];
             const salaryKey = `salary_1405_${currentMonthIdx}`;
-            const baseSalaryFare = appStorage[salaryKey] || '0';
-
             let data = [
                 [`Report ${m.en} 1405`],
-                [`Base Net Income:`, baseSalaryFare.replace(/,/g, ''), "Toman"],
-                [""],
-                ["Date", "In Time", "Out Time", "Fare (Toman)"]
+                [`Base Net Income:`, (appStorage[salaryKey] || '0').replace(/,/g, ''), "Toman"],
+                [""], ["Date", "In Time", "Out Time", "Fare (Toman)"]
             ];
-            
             for (let date in appStorage) {
                 if(date.startsWith(`1405-${String(currentMonthIdx + 1).padStart(2,'0')}`)) {
                     let rec = appStorage[date];
-                    if (rec.checked && !rec.scratched) {
-                        data.push([date, rec.in, rec.out, rec.fare.replace(/,/g, '')]);
-                    }
+                    if (rec.checked && !rec.scratched) data.push([date, rec.in, rec.out, rec.fare.replace(/,/g, '')]);
                 }
             }
-            
-            let ws = XLSX.utils.aoa_to_sheet(data);
-            let wb = XLSX.utils.book_new();
+            let ws = XLSX.utils.aoa_to_sheet(data), wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Log");
             XLSX.writeFile(wb, `Shift_Report_1405_${m.en}.xlsx`);
         }
