@@ -277,7 +277,7 @@
                 <span id="btnPrevMonth">ماه قبل</span>
             </button>
             <button onclick="goToToday()" class="flex flex-col items-center gap-1 text-emerald-400 font-black">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                 <span id="btnToday">امروز</span>
             </button>
             <button onclick="changeMonth(1)" class="flex flex-col items-center gap-1 hover:text-emerald-400 transition-colors">
@@ -311,16 +311,7 @@
                 </div>
             </div>
 
-            <div class="mb-4 bg-purple-950/10 p-3 rounded-2xl border border-purple-900/30">
-                <label class="text-[10px] text-purple-400 block mb-1.5 font-bold">تنظیم دستی تاریخ امروز سیستم (سینک لایو AI)</label>
-                <div class="flex items-center justify-between bg-zinc-900/50 p-2 rounded-xl">
-                    <button onclick="adjustTodaySystemDay(-1)" class="w-8 h-8 bg-zinc-950 text-purple-400 rounded-lg font-bold hover:bg-purple-900/20 transition-colors">-۱</button>
-                    <span id="sysTodayDayBadge" class="text-xs font-black text-zinc-200">روز ۲۱ ماه</span>
-                    <button onclick="adjustTodaySystemDay(1)" class="w-8 h-8 bg-zinc-950 text-purple-400 rounded-lg font-bold hover:bg-purple-900/20 transition-colors">+۱</button>
-                </div>
-            </div>
-
-            <div class="mb-4 grid grid-cols-2 gap-2">
+            <div class="mb-4 bg-zinc-950/40 grid grid-cols-2 gap-2">
                 <div>
                     <label class="text-[10px] text-zinc-500 block mb-1.5 font-bold">زبان پلتفرم</label>
                     <div class="grid grid-cols-2 gap-1">
@@ -417,8 +408,10 @@
             }
         };
 
+        // متغیرهای زمان لایو
         let currentMonthIdx = 2; 
-        let systemTodayDay = 21; 
+        let systemTodayDay = 1; 
+
         let isSystemLocked = false;
         let userActivityTimer;
 
@@ -432,7 +425,40 @@
 
         let touchStartX = 0, touchEndX = 0;
 
+        // تابع ریاضی برای تبدیل تاریخ میلادی لایو به شمسی
+        function getLiveShamsiDate() {
+            const now = new Date();
+            const gy = now.getFullYear();
+            const gm = now.getMonth() + 1;
+            const gd = now.getDate();
+
+            const g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+            let gy2 = (gm > 2) ? (gy + 1) : gy;
+            let days = 355666 + (365 * gy) + Math.floor((gy2 + 3) / 4) - Math.floor((gy2 + 99) / 100) + Math.floor((gy2 + 399) / 400) + gd + g_d_m[gm - 1];
+            let jy = -1595 + (33 * Math.floor(days / 12053));
+            days %= 12053;
+            jy += 4 * Math.floor(days / 1461);
+            days %= 1461;
+            if (days > 365) {
+                jy += Math.floor((days - 1) / 365);
+                days = (days - 1) % 365;
+            }
+            let jm = (days < 186) ? (1 + Math.floor(days / 31)) : (7 + Math.floor((days - 186) / 30));
+            let jd = (days < 186) ? ((days % 31) + 1) : (((days - 186) % 30) + 1);
+            return { year: jy, month: jm, day: jd };
+        }
+
         function initApp() {
+            // سینک لایو تاریخ در اولین لود صفحه
+            const shamsi = getLiveShamsiDate();
+            if (shamsi.year === 1405) {
+                currentMonthIdx = shamsi.month - 1;
+                systemTodayDay = shamsi.day;
+            } else {
+                currentMonthIdx = 2; // پیشفرض خرداد در صورت خطا
+                systemTodayDay = 31;
+            }
+
             setAppTheme(config.theme);
             changeLanguage(config.lang);
             setupSwipeGestures();
@@ -552,18 +578,9 @@
             saveConfig();
         }
 
-        function adjustTodaySystemDay(dir) {
-            systemTodayDay += dir;
-            if (systemTodayDay < 1) systemTodayDay = 1;
-            if (systemTodayDay > 31) systemTodayDay = 31;
-            document.getElementById('sysTodayDayBadge').innerText = config.lang === 'fa' ? `روز ${systemTodayDay} ماه` : `Day ${systemTodayDay}`;
-            renderMonth(currentMonthIdx);
-        }
-
         function updateAiUIElements() {
             document.getElementById('cfgAutoLockToggle').value = config.autoLockActive ? 'active' : 'disabled';
             document.getElementById('cfgAutoLockSeconds').value = config.autoLockSeconds;
-            document.getElementById('sysTodayDayBadge').innerText = config.lang === 'fa' ? `روز ${systemTodayDay} ماه` : `Day ${systemTodayDay}`;
             document.getElementById('cfgAiMonthSelect').value = config.aiBaseMonthIdx || 2;
         }
 
@@ -606,11 +623,18 @@
             renderMonth(currentMonthIdx);
         }
 
-        // اصلاح دکمه امروز: هدایت و فوکوس دقیق روی ردیف روز جاری در ماه خرداد
+        // دکمه امروز کاملاً هوشمند متصل به تاریخ زنده سیستم شمسی
         function goToToday() {
             if (isSystemLocked) return;
-            currentMonthIdx = 2; 
+            
+            const shamsi = getLiveShamsiDate();
+            if (shamsi.year === 1405) {
+                currentMonthIdx = shamsi.month - 1;
+                systemTodayDay = shamsi.day;
+            }
+            
             renderMonth(currentMonthIdx);
+            
             setTimeout(() => {
                 const todayRow = document.getElementById(`day-row-${systemTodayDay}`); 
                 if(todayRow) {
@@ -641,6 +665,9 @@
             let activeDefOut = config.monthDefTimes[`m_${idx}_out`] || config.defOut;
             let currentOffset = config.dayOffsets[`m_${idx}`] || 0;
 
+            // تشخیص لایو امروز برای کشیدن بوردر و نشانه
+            const liveShamsi = getLiveShamsiDate();
+
             for (let d = 1; d <= m.days; d++) {
                 let dateStr = `1405-${String(idx + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
                 let dayIndex = (m.startWdIndex + (d - 1) + currentOffset + 70) % 7;
@@ -657,7 +684,7 @@
                 let rowBorder = isHoliday ? 'border-rose-900/40 bg-rose-950/10' : isFriday ? 'border-purple-900/40 bg-purple-950/10' : 'border-zinc-800/40 bg-zinc-900/10 dark:bg-zinc-900/20';
                 let labelColor = isHoliday ? 'text-rose-400 font-bold' : isFriday ? 'text-purple-400 font-bold' : 'text-zinc-300';
                 
-                let isFixedToday = (idx === 2 && d === systemTodayDay);
+                let isFixedToday = (liveShamsi.year === 1405 && idx === (liveShamsi.month - 1) && d === liveShamsi.day);
                 if(isFixedToday) rowBorder += ' border-emerald-500/50';
 
                 let rowClass = `grid grid-cols-12 gap-1 items-center p-2 rounded-xl text-center text-xs border ${rowBorder} day-row transition-all duration-200`;
@@ -698,13 +725,15 @@
                 gridContainer.insertAdjacentHTML('beforeend', `<div class="opacity-0 pointer-events-none p-2"></div>`);
             }
 
+            const liveShamsi = getLiveShamsiDate();
+
             for(let d = 1; d <= m.days; d++) {
                 let dateStr = `1405-${String(currentMonthIdx + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
                 let dayIndex = (m.startWdIndex + (d - 1) + currentOffset + 70) % 7;
                 
                 let isFriday = dayIndex === 6;
                 let isHoliday = !!config.customizedHolidays[dateStr];
-                let isToday = (currentMonthIdx === 2 && d === systemTodayDay);
+                let isToday = (liveShamsi.year === 1405 && currentMonthIdx === (liveShamsi.month - 1) && d === liveShamsi.day);
                 
                 let dayData = appStorage[dateStr] || { checked: false, scratched: false };
                 
@@ -888,13 +917,27 @@
                 `✓ Loaded Base: ${parsedBaseSalary.toLocaleString()} Toman | Workload: ${baseHours.toFixed(1)} hrs`;
 
             let valuePerWorkHour = parsedBaseSalary / baseHours;
+            
+            let totalActiveCheckedDaysInCurrentMonth = 0;
+            const m = monthsConfig[currentMonthIdx];
+            for (let d = 1; d <= m.days; d++) {
+                let dateStr = `1405-${String(currentMonthIdx + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                let rec = appStorage[dateStr];
+                if (rec && rec.checked && !rec.scratched) {
+                    totalActiveCheckedDaysInCurrentMonth++;
+                }
+            }
+
             let currentMonthMinutes = calculateMonthTotalMinutesFromStorage(currentMonthIdx);
             let currentHoursWorked = currentMonthMinutes / 60;
-            
-            let calculatedTargetDay = (currentMonthIdx === 2) ? systemTodayDay : monthsConfig[currentMonthIdx].days; 
-            if(calculatedTargetDay <= 0) calculatedTargetDay = 1;
 
-            let projectedTotalHours = (currentHoursWorked / calculatedTargetDay) * monthsConfig[currentMonthIdx].days;
+            const liveShamsi = getLiveShamsiDate();
+            let currentLiveDay = (liveShamsi.year === 1405 && liveShamsi.month === (currentMonthIdx + 1)) ? liveShamsi.day : m.days;
+
+            let timeProgressDivider = totalActiveCheckedDaysInCurrentMonth > 0 ? totalActiveCheckedDaysInCurrentMonth : currentLiveDay;
+            if(timeProgressDivider <= 0) timeProgressDivider = 1;
+
+            let projectedTotalHours = (currentHoursWorked / timeProgressDivider) * m.days;
             let finalAiSalaryEstimate = projectedTotalHours * valuePerWorkHour;
 
             if (currentHoursWorked === 0) {
@@ -902,17 +945,17 @@
                 projectedTotalHours = 0;
             }
 
-            let progressBarPercentage = Math.min((calculatedTargetDay / monthsConfig[currentMonthIdx].days) * 100, 100);
+            let progressBarPercentage = Math.min((currentLiveDay / m.days) * 100, 100);
             document.getElementById('aiProgressBar').style.width = `${progressBarPercentage}%`;
 
             if (config.lang === 'fa') {
                 document.getElementById('aiPredictionDisplay').innerText = finalAiSalaryEstimate > 0 ? 
                     `${Math.round(finalAiSalaryEstimate).toLocaleString('fa-IR')} تومان` : "داده‌ای ثبت نشده";
-                document.getElementById('aiMetricsSummary').innerText = `تا روز ${calculatedTargetDay} این ماه، مجموع کارکرد شما ${currentHoursWorked.toFixed(1)} ساعت است. ارزش برآوردی کل کارکرد نهایی ته ماه بر اساس نرخ ساعتیِ ماه ${baseMonthObj.name}، حدود ${Math.round(projectedTotalHours).toLocaleString('fa-IR')} ساعت معادل مبلغ فوق پیش‌بینی می‌شود.`;
+                document.getElementById('aiMetricsSummary').innerText = `تا روز ${currentLiveDay} این ماه، مجموع کارکرد شما ${currentHoursWorked.toFixed(1)} ساعت است. ارزش برآوردی کل کارکرد نهایی ته ماه بر اساس نرخ ساعتیِ ماه ${baseMonthObj.name}، حدود ${Math.round(projectedTotalHours).toLocaleString('fa-IR')} ساعت معادل مبلغ فوق پیش‌بینی می‌شود.`;
             } else {
                 document.getElementById('aiPredictionDisplay').innerText = finalAiSalaryEstimate > 0 ? 
                     `${Math.round(finalAiSalaryEstimate).toLocaleString()} Toman` : "No data logged";
-                document.getElementById('aiMetricsSummary').innerText = `Up to day ${calculatedTargetDay}, logged workload is ${currentHoursWorked.toFixed(1)} hrs. Final month forecast based on ${baseMonthObj.en} rate is approx ${Math.round(projectedTotalHours)} hrs.`;
+                document.getElementById('aiMetricsSummary').innerText = `Up to day ${currentLiveDay}, logged workload is ${currentHoursWorked.toFixed(1)} hrs. Final month forecast based on ${baseMonthObj.en} rate is approx ${Math.round(projectedTotalHours)} hrs.`;
             }
         }
 
